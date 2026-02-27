@@ -19,14 +19,13 @@ const SEV = {
 };
 
 const L = {
-  he: { all:'הכל', search:'חיפוש...', noResults:'לא נמצאו רשומות', noResultsSub:'נסה לשנות את החיפוש או הפילטר', related:'רשומות קשורות', filtering:'מסנן:' },
-  en: { all:'All', search:'Search...', noResults:'No entries found', noResultsSub:'Try adjusting your search or filters', related:'Related Entries', filtering:'Filtering:' }
+  he: { all:'הכל', search:'חיפוש...', noResults:'לא נמצאו רשומות', noResultsSub:'נסה לשנות את החיפוש או הפילטר', related:'רשומות קשורות', filtering:'מסנן:', switchLang:'Switch to English' },
+  en: { all:'All', search:'Search...', noResults:'No entries found', noResultsSub:'Try adjusting your search or filters', related:'Related Entries', filtering:'Filtering:', switchLang:'עבור לעברית' }
 };
 
 /* ── Helpers ── */
 function loc(obj, field) {
   if (!obj) return '';
-  // Try field_lang first (e.g. title_en), then field as {he,en} object, then string
   const suffixed = obj[field + '_' + lang];
   if (suffixed !== undefined) return suffixed;
   const val = obj[field];
@@ -42,8 +41,11 @@ function esc(s) {
 
 function fmtDate(iso) {
   if (!iso) return '';
-  try { return new Date(iso).toLocaleDateString(lang === 'he' ? 'he-IL' : 'en-US', { year:'numeric', month:'short', day:'numeric' }); }
-  catch { return iso; }
+  try {
+    return new Date(iso).toLocaleDateString(lang === 'he' ? 'he-IL' : 'en-US', { year:'numeric', month:'short', day:'numeric' });
+  } catch (e) {
+    return iso;
+  }
 }
 
 function catLabel(id) {
@@ -55,55 +57,64 @@ function catLabel(id) {
 function isHtml(s) { return /<[a-z][\s\S]*>/i.test(s); }
 
 /* ── DOM refs ── */
-const $cards   = document.getElementById('cards');
-const $empty   = document.getElementById('empty');
-const $count   = document.getElementById('count');
-const $cats    = document.getElementById('cats');
-const $tags    = document.getElementById('tags');
-const $search  = document.getElementById('search');
-const $langBtn = document.getElementById('lang-btn');
-const $drawer  = document.getElementById('drawer');
-const $dHead   = document.getElementById('drawer-head');
-const $dBody   = document.getElementById('drawer-body');
-const $dClose  = document.getElementById('drawer-close');
-const $dBack   = document.getElementById('drawer-backdrop');
-const $filters = document.getElementById('filters');
+const $ = (id) => document.getElementById(id);
+const $cards   = $('cards');
+const $empty   = $('empty');
+const $count   = $('count');
+const $cats    = $('cats');
+const $tags    = $('tags');
+const $search  = $('search');
+const $langBtn = $('lang-btn');
+const $drawer  = $('drawer');
+const $dHead   = $('drawer-head');
+const $dBody   = $('drawer-body');
+const $dClose  = $('drawer-close');
+const $dBack   = $('drawer-backdrop');
+const $filters = $('filters');
 
 /* ── Boot ── */
-document.addEventListener('DOMContentLoaded', async () => {
-  try {
-    const res = await fetch('./data/entries.json');
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    entries = data.entries || (Array.isArray(data) ? data : []);
-    categories = data.categories || {};
-  } catch (e) {
-    $cards.innerHTML = '<p style="color:#ef4444;padding:40px;text-align:center">Failed to load data: ' + esc(e.message) + '</p>';
-    return;
-  }
-  buildCats();
-  buildTags();
-  render();
-  wireEvents();
-  handleHash();
-  window.addEventListener('hashchange', handleHash);
-});
+function init() {
+  fetch('./data/entries.json')
+    .then(function(res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    })
+    .then(function(data) {
+      entries = data.entries || (Array.isArray(data) ? data : []);
+      categories = data.categories || {};
+      buildCats();
+      buildTags();
+      render();
+      wireEvents();
+      handleHash();
+      window.addEventListener('hashchange', handleHash);
+    })
+    .catch(function(e) {
+      if ($cards) $cards.innerHTML = '<p style="color:#ef4444;padding:40px;text-align:center">Failed to load data: ' + esc(e.message) + '</p>';
+    });
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
 
 /* ── Render cards ── */
 function render() {
-  let list = entries.filter(e => {
+  var list = entries.filter(function(e) {
     if (filterCat && e.category !== filterCat) return false;
     if (filterTag && !(e.tags || []).includes(filterTag)) return false;
     if (query) {
-      const q = query.toLowerCase();
-      const t = (loc(e,'title') || '').toLowerCase();
-      const s = (loc(e,'summary') || '').toLowerCase();
-      const tags = (e.tags || []).join(' ').toLowerCase();
+      var q = query.toLowerCase();
+      var t = (loc(e,'title') || '').toLowerCase();
+      var s = (loc(e,'summary') || '').toLowerCase();
+      var tags = (e.tags || []).join(' ').toLowerCase();
       if (!t.includes(q) && !s.includes(q) && !tags.includes(q)) return false;
     }
     return true;
   });
-  list.sort((a,b) => new Date(b.date) - new Date(a.date));
+  list.sort(function(a,b) { return new Date(b.date) - new Date(a.date); });
 
   $count.textContent = list.length;
   updateFilters();
@@ -118,32 +129,35 @@ function render() {
   $empty.hidden = true;
   $cards.innerHTML = list.map(cardHtml).join('');
 
-  // Attach events
-  $cards.querySelectorAll('.card').forEach(el => {
-    el.addEventListener('click', () => openEntry(el.dataset.id));
+  // Attach click + keyboard events
+  $cards.querySelectorAll('.card').forEach(function(el) {
+    el.addEventListener('click', function() { openEntry(el.dataset.id); });
+    el.addEventListener('keydown', function(ev) {
+      if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); openEntry(el.dataset.id); }
+    });
   });
-  $cards.querySelectorAll('.card-tag').forEach(el => {
-    el.addEventListener('click', ev => { ev.stopPropagation(); setTag(el.dataset.tag); });
+  $cards.querySelectorAll('.card-tag').forEach(function(el) {
+    el.addEventListener('click', function(ev) { ev.stopPropagation(); setTag(el.dataset.tag); });
   });
 }
 
 function cardHtml(e) {
-  const title = esc(loc(e,'title'));
-  const summary = esc(loc(e,'summary'));
-  const sev = e.severity || 'info';
-  const sevText = esc((SEV[lang] || SEV.en)[sev] || sev);
-  const cat = esc(catLabel(e.category));
-  const date = esc(fmtDate(e.date));
-  const tags = (e.tags || []).map(t =>
-    '<span class="card-tag" data-tag="' + esc(t) + '">' + esc(t) + '</span>'
-  ).join('');
+  var title = esc(loc(e,'title'));
+  var summary = esc(loc(e,'summary'));
+  var sev = e.severity || 'info';
+  var sevText = esc((SEV[lang] || SEV.en)[sev] || sev);
+  var cat = esc(catLabel(e.category));
+  var date = esc(fmtDate(e.date));
+  var tags = (e.tags || []).map(function(t) {
+    return '<span class="card-tag" data-tag="' + esc(t) + '" role="button" tabindex="0">' + esc(t) + '</span>';
+  }).join('');
 
-  return '<article class="card" data-id="' + esc(e.id) + '" data-cat="' + esc(e.category) + '" tabindex="0">' +
+  return '<article class="card" data-id="' + esc(e.id) + '" data-cat="' + esc(e.category) + '" tabindex="0" role="button" aria-label="' + title + '">' +
     '<div class="card-top">' +
       '<span class="badge badge-' + esc(sev) + '">' + sevText + '</span>' +
       '<span class="cat-label">' + cat + '</span>' +
       '<span class="card-date">' + date + '</span>' +
-      '<svg class="card-arrow" width="16" height="16" viewBox="0 0 16 16"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>' +
+      '<svg class="card-arrow" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>' +
     '</div>' +
     '<h2 class="card-title">' + title + '</h2>' +
     '<p class="card-summary">' + summary + '</p>' +
@@ -153,58 +167,61 @@ function cardHtml(e) {
 
 /* ── Categories ── */
 function buildCats() {
-  const counts = {};
-  entries.forEach(e => { counts[e.category] = (counts[e.category] || 0) + 1; });
+  var counts = {};
+  entries.forEach(function(e) { counts[e.category] = (counts[e.category] || 0) + 1; });
 
-  let html = '<button class="cat-btn' + (!filterCat ? ' active' : '') + '" data-cat="">' +
+  var html = '<button class="cat-btn' + (!filterCat ? ' active' : '') + '" data-cat="" aria-pressed="' + (!filterCat) + '">' +
     '<span>' + esc(L[lang].all) + '</span><span class="cat-count">' + entries.length + '</span></button>';
 
-  Object.keys(categories).forEach(id => {
-    const active = filterCat === id ? ' active' : '';
-    const color = CAT_COLORS[id] || '#888';
-    html += '<button class="cat-btn' + active + '" data-cat="' + esc(id) + '">' +
-      '<span><span class="cat-dot" style="background:' + color + '"></span>' + esc(catLabel(id)) + '</span>' +
+  Object.keys(categories).forEach(function(id) {
+    var active = filterCat === id;
+    var color = CAT_COLORS[id] || '#888';
+    html += '<button class="cat-btn' + (active ? ' active' : '') + '" data-cat="' + esc(id) + '" aria-pressed="' + active + '">' +
+      '<span><span class="cat-dot" style="background:' + color + '" aria-hidden="true"></span>' + esc(catLabel(id)) + '</span>' +
       '<span class="cat-count">' + (counts[id] || 0) + '</span></button>';
   });
   $cats.innerHTML = html;
-  $cats.querySelectorAll('.cat-btn').forEach(b => {
-    b.addEventListener('click', () => setCat(b.dataset.cat || null));
+  $cats.querySelectorAll('.cat-btn').forEach(function(b) {
+    b.addEventListener('click', function() { setCat(b.dataset.cat || null); });
   });
 }
 
 /* ── Tags ── */
 function buildTags() {
-  const tc = {};
-  entries.forEach(e => (e.tags || []).forEach(t => { tc[t] = (tc[t] || 0) + 1; }));
-  const sorted = Object.entries(tc).sort((a,b) => b[1] - a[1]).slice(0, 15);
+  var tc = {};
+  entries.forEach(function(e) { (e.tags || []).forEach(function(t) { tc[t] = (tc[t] || 0) + 1; }); });
+  var sorted = Object.entries(tc).sort(function(a,b) { return b[1] - a[1]; }).slice(0, 15);
   if (!sorted.length) { $tags.innerHTML = ''; return; }
 
-  $tags.innerHTML = sorted.map(([t]) => {
-    const active = filterTag === t ? ' active' : '';
-    return '<button class="tag' + active + '" data-tag="' + esc(t) + '">' + esc(t) + '</button>';
+  $tags.innerHTML = sorted.map(function(pair) {
+    var t = pair[0];
+    var active = filterTag === t;
+    return '<button class="tag' + (active ? ' active' : '') + '" data-tag="' + esc(t) + '" role="listitem" aria-pressed="' + active + '">' + esc(t) + '</button>';
   }).join('');
-  $tags.querySelectorAll('.tag').forEach(b => {
-    b.addEventListener('click', () => setTag(b.dataset.tag));
+  $tags.querySelectorAll('.tag').forEach(function(b) {
+    b.addEventListener('click', function() { setTag(b.dataset.tag); });
   });
 }
 
 /* ── Filters bar ── */
 function updateFilters() {
-  const parts = [];
-  if (filterCat) parts.push('<span class="filter-chip">' + esc(catLabel(filterCat)) + ' <span class="filter-x" data-action="clear-cat">&times;</span></span>');
-  if (filterTag) parts.push('<span class="filter-chip">#' + esc(filterTag) + ' <span class="filter-x" data-action="clear-tag">&times;</span></span>');
-  if (query) parts.push('<span class="filter-chip">"' + esc(query) + '" <span class="filter-x" data-action="clear-search">&times;</span></span>');
+  var parts = [];
+  if (filterCat) parts.push('<span class="filter-chip">' + esc(catLabel(filterCat)) + ' <span class="filter-x" data-action="clear-cat" role="button" tabindex="0" aria-label="Remove category filter">&times;</span></span>');
+  if (filterTag) parts.push('<span class="filter-chip">#' + esc(filterTag) + ' <span class="filter-x" data-action="clear-tag" role="button" tabindex="0" aria-label="Remove tag filter">&times;</span></span>');
+  if (query) parts.push('<span class="filter-chip">&ldquo;' + esc(query) + '&rdquo; <span class="filter-x" data-action="clear-search" role="button" tabindex="0" aria-label="Clear search">&times;</span></span>');
 
   if (!parts.length) { $filters.hidden = true; return; }
   $filters.hidden = false;
   $filters.innerHTML = '<span>' + L[lang].filtering + '</span> ' + parts.join(' ');
-  $filters.querySelectorAll('.filter-x').forEach(x => {
-    x.addEventListener('click', () => {
-      const a = x.dataset.action;
+  $filters.querySelectorAll('.filter-x').forEach(function(x) {
+    function handleClear() {
+      var a = x.dataset.action;
       if (a === 'clear-cat') setCat(null);
       else if (a === 'clear-tag') setTag(null);
       else if (a === 'clear-search') { query = ''; $search.value = ''; render(); buildCats(); buildTags(); }
-    });
+    }
+    x.addEventListener('click', handleClear);
+    x.addEventListener('keydown', function(ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); handleClear(); } });
   });
 }
 
@@ -221,23 +238,23 @@ function setTag(tag) {
 
 /* ── Drawer ── */
 function openEntry(id) {
-  const e = entries.find(x => x.id === id);
+  var e = entries.find(function(x) { return x.id === id; });
   if (!e) return;
 
-  const sev = e.severity || 'info';
-  const sevText = esc((SEV[lang] || SEV.en)[sev] || sev);
-  const cat = esc(catLabel(e.category));
-  const date = esc(fmtDate(e.date));
-  const title = esc(loc(e,'title'));
-  const details = loc(e,'details') || '';
-  const detailsHtml = isHtml(details) ? details : details.split('\n\n').map(p => '<p>' + esc(p.trim()) + '</p>').join('');
+  var sev = e.severity || 'info';
+  var sevText = esc((SEV[lang] || SEV.en)[sev] || sev);
+  var cat = esc(catLabel(e.category));
+  var date = esc(fmtDate(e.date));
+  var title = esc(loc(e,'title'));
+  var details = loc(e,'details') || '';
+  var detailsHtml = isHtml(details) ? details : details.split('\n\n').map(function(p) { return '<p>' + esc(p.trim()) + '</p>'; }).join('');
 
-  const tags = (e.tags || []).map(t =>
-    '<span class="card-tag" data-tag="' + esc(t) + '">' + esc(t) + '</span>'
-  ).join('');
+  var tags = (e.tags || []).map(function(t) {
+    return '<span class="card-tag" data-tag="' + esc(t) + '" role="button" tabindex="0">' + esc(t) + '</span>';
+  }).join('');
 
   $dHead.innerHTML =
-    '<h1 class="drawer-title">' + title + '</h1>' +
+    '<h1 class="drawer-title" id="drawer-title">' + title + '</h1>' +
     '<div class="drawer-meta">' +
       '<span class="badge badge-' + esc(sev) + '">' + sevText + '</span>' +
       '<span class="cat-label">' + cat + '</span>' +
@@ -245,11 +262,11 @@ function openEntry(id) {
     '</div>' +
     (tags ? '<div class="drawer-tags">' + tags + '</div>' : '');
 
-  let related = '';
+  var related = '';
   if (Array.isArray(e.related) && e.related.length) {
-    const links = e.related.map(rid => {
-      const r = entries.find(x => x.id === rid);
-      const rTitle = r ? esc(loc(r,'title')) : esc(rid);
+    var links = e.related.map(function(rid) {
+      var r = entries.find(function(x) { return x.id === rid; });
+      var rTitle = r ? esc(loc(r,'title')) : esc(rid);
       return '<a href="#entry/' + esc(rid) + '" class="related-link">' + rTitle + '</a>';
     }).join('');
     related = '<div class="drawer-related"><h3>' + L[lang].related + '</h3>' + links + '</div>';
@@ -258,12 +275,14 @@ function openEntry(id) {
   $dBody.innerHTML = detailsHtml + related;
 
   // Wire tag clicks in drawer
-  $dHead.querySelectorAll('.card-tag').forEach(el => {
-    el.addEventListener('click', () => { closeDrawer(); setTag(el.dataset.tag); });
+  $dHead.querySelectorAll('.card-tag').forEach(function(el) {
+    function handleTagClick() { closeDrawer(); setTag(el.dataset.tag); }
+    el.addEventListener('click', handleTagClick);
+    el.addEventListener('keydown', function(ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); handleTagClick(); } });
   });
   // Wire related links
-  $dBody.querySelectorAll('.related-link').forEach(a => {
-    a.addEventListener('click', ev => { ev.preventDefault(); openEntry(a.getAttribute('href').replace('#entry/','')); });
+  $dBody.querySelectorAll('.related-link').forEach(function(a) {
+    a.addEventListener('click', function(ev) { ev.preventDefault(); openEntry(a.getAttribute('href').replace('#entry/','')); });
   });
 
   $drawer.hidden = false;
@@ -280,7 +299,7 @@ function closeDrawer() {
 
 /* ── Hash nav ── */
 function handleHash() {
-  const h = location.hash;
+  var h = location.hash;
   if (h.startsWith('#entry/')) {
     openEntry(decodeURIComponent(h.slice(7)));
   } else if (!$drawer.hidden) {
@@ -295,16 +314,18 @@ function toggleLang() {
   document.documentElement.lang = lang === 'he' ? 'he' : 'en';
   document.documentElement.dir  = lang === 'he' ? 'rtl' : 'ltr';
   $langBtn.textContent = lang === 'he' ? 'EN' : 'עב';
+  $langBtn.setAttribute('aria-label', L[lang].switchLang);
   $search.placeholder = L[lang].search;
-  // Show/hide logo text
-  document.querySelector('.logo-he').style.display = lang === 'he' ? '' : 'none';
-  document.querySelector('.logo-en').style.display = lang === 'en' ? '' : 'none';
+  // Update search label
+  var searchLabel = document.querySelector('label[for="search"]');
+  if (searchLabel) searchLabel.textContent = lang === 'he' ? 'חיפוש רשומות' : 'Search entries';
+
   buildCats();
   buildTags();
   render();
   // Re-render drawer if open
   if (!$drawer.hidden) {
-    const h = location.hash;
+    var h = location.hash;
     if (h.startsWith('#entry/')) openEntry(decodeURIComponent(h.slice(7)));
   }
 }
@@ -314,12 +335,14 @@ function wireEvents() {
   $langBtn.addEventListener('click', toggleLang);
   $dClose.addEventListener('click', closeDrawer);
   $dBack.addEventListener('click', closeDrawer);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$drawer.hidden) closeDrawer(); });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && !$drawer.hidden) closeDrawer();
+  });
 
-  let timer;
-  $search.addEventListener('input', () => {
+  var timer;
+  $search.addEventListener('input', function() {
     clearTimeout(timer);
-    timer = setTimeout(() => {
+    timer = setTimeout(function() {
       query = $search.value.trim();
       filterCat = null; filterTag = null;
       render(); buildCats(); buildTags();
