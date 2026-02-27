@@ -71,6 +71,8 @@ const $dHead   = $('drawer-head');
 const $dBody   = $('drawer-body');
 const $dClose  = $('drawer-close');
 const $dBack   = $('drawer-backdrop');
+const $dPanel  = $('drawer-panel');
+const $dScrollTop = $('drawer-scroll-top');
 const $filters = $('filters');
 
 /* ── Boot ── */
@@ -288,6 +290,8 @@ function openEntry(id) {
 
   $drawer.hidden = false;
   document.body.classList.add('drawer-open');
+  $dPanel.scrollTop = 0;
+  if ($dScrollTop) $dScrollTop.classList.remove('visible');
   if (location.hash !== '#entry/' + id) history.pushState(null, '', '#entry/' + id);
   $dClose.focus();
 }
@@ -349,4 +353,18 @@ function wireEvents() {
       render(); buildCats(); buildTags();
     }, 200);
   });
+
+  // Drawer scroll-to-top button
+  if ($dPanel && $dScrollTop) {
+    $dPanel.addEventListener('scroll', function() {
+      if ($dPanel.scrollTop > 300) {
+        $dScrollTop.classList.add('visible');
+      } else {
+        $dScrollTop.classList.remove('visible');
+      }
+    });
+    $dScrollTop.addEventListener('click', function() {
+      $dPanel.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
 }
