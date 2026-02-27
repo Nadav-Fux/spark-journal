@@ -10,7 +10,8 @@ let query = '';
 
 const CAT_COLORS = {
   system: '#06b6d4', monitoring: '#8b5cf6', security: '#ef4444',
-  deployment: '#22c55e', performance: '#f59e0b', features: '#a855f7'
+  deployment: '#22c55e', performance: '#f59e0b', features: '#a855f7',
+  research: '#ec4899', 'future-plans': '#14b8a6', projects: '#f97316'
 };
 
 const SEV = {

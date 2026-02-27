@@ -295,6 +295,9 @@ a:focus-visible { border-radius: 4px; }
 .card[data-cat="deployment"]  { --stripe: #22c55e; }
 .card[data-cat="performance"] { --stripe: #f59e0b; }
 .card[data-cat="features"]    { --stripe: #a855f7; }
+.card[data-cat="research"]    { --stripe: #ec4899; }
+.card[data-cat="future-plans"]{ --stripe: #14b8a6; }
+.card[data-cat="projects"]    { --stripe: #f97316; }
 
 /* ── BADGES ── */
 .badge {
@@ -462,6 +465,56 @@ a:focus-visible { border-radius: 4px; }
 .drawer-body .alert-blue   { background: rgba(6,182,212,.06); border-color: #06b6d4; color: #67e8f9; }
 .drawer-body .alert-orange { background: rgba(245,158,11,.06); border-color: #f59e0b; color: #fcd34d; }
 .drawer-body .meta-bar     { background: rgba(139,92,246,.06); border-color: #8b5cf6; color: #c4b5fd; }
+
+/* Executive summary */
+.drawer-body .exec-summary {
+  background: rgba(6,182,212,.05);
+  border: 1px solid rgba(6,182,212,.15);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+}
+.drawer-body .exec-summary h3 {
+  color: var(--primary);
+  font-size: 14px;
+  margin: 0 0 8px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.drawer-body .exec-summary p {
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.7;
+  margin-bottom: 0;
+}
+.drawer-body .section-divider {
+  border: none;
+  border-top: 1px dashed var(--border);
+  margin: 20px 0;
+}
+.drawer-body .email-content {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--dim);
+}
+
+/* Embedded email content — strip inline styles that conflict */
+.drawer-body .email-content h1,
+.drawer-body .email-content h2 {
+  color: var(--primary);
+  font-size: 16px;
+  font-weight: 700;
+  margin: 20px 0 8px;
+  border: none;
+  background: none;
+  padding: 0;
+}
+.drawer-body .email-content h3 {
+  color: var(--text);
+}
+.drawer-body .email-content p {
+  color: var(--dim);
+}
 
 /* Related entries */
 .drawer-related { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border); }
