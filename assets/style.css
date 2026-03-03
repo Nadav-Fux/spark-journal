@@ -120,6 +120,16 @@ a:focus-visible { border-radius: 4px; }
   transition: background .2s, color .2s;
 }
 .lang-btn:hover { background: var(--primary); color: #000; }
+.sort-btn {
+  font-size: 12px; font-weight: 500;
+  padding: 5px 14px;
+  border-radius: 99px;
+  border: 1px solid var(--border-hover);
+  color: var(--dim);
+  transition: background .2s, color .2s, border-color .2s;
+  white-space: nowrap;
+}
+.sort-btn:hover { border-color: var(--primary); color: var(--primary); }
 
 /* ── LAYOUT ── */
 .layout {

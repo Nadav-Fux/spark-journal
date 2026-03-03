@@ -7,6 +7,7 @@ let lang = 'he';
 let filterCat = null;
 let filterTag = null;
 let query = '';
+let sortAsc = false; // false = newest first (default), true = oldest first
 
 const CAT_COLORS = {
   system: '#06b6d4', monitoring: '#8b5cf6', security: '#ef4444',
@@ -20,8 +21,8 @@ const SEV = {
 };
 
 const L = {
-  he: { all:'הכל', search:'חיפוש...', noResults:'לא נמצאו רשומות', noResultsSub:'נסה לשנות את החיפוש או הפילטר', related:'רשומות קשורות', filtering:'מסנן:', switchLang:'Switch to English' },
-  en: { all:'All', search:'Search...', noResults:'No entries found', noResultsSub:'Try adjusting your search or filters', related:'Related Entries', filtering:'Filtering:', switchLang:'עבור לעברית' }
+  he: { all:'הכל', search:'חיפוש...', noResults:'לא נמצאו רשומות', noResultsSub:'נסה לשנות את החיפוש או הפילטר', related:'רשומות קשורות', filtering:'מסנן:', switchLang:'Switch to English', newestFirst:'חדש → ישן', oldestFirst:'ישן → חדש' },
+  en: { all:'All', search:'Search...', noResults:'No entries found', noResultsSub:'Try adjusting your search or filters', related:'Related Entries', filtering:'Filtering:', switchLang:'עבור לעברית', newestFirst:'Newest first', oldestFirst:'Oldest first' }
 };
 
 /* ── Helpers ── */
@@ -74,6 +75,7 @@ const $dBack   = $('drawer-backdrop');
 const $dPanel  = $('drawer-panel');
 const $dScrollTop = $('drawer-scroll-top');
 const $filters = $('filters');
+const $sortBtn = $('sort-btn');
 
 /* ── Boot ── */
 function init() {
@@ -87,6 +89,7 @@ function init() {
       categories = data.categories || {};
       buildCats();
       buildTags();
+      updateSortBtn();
       render();
       wireEvents();
       handleHash();
@@ -117,7 +120,7 @@ function render() {
     }
     return true;
   });
-  list.sort(function(a,b) { return new Date(b.date) - new Date(a.date); });
+  list.sort(function(a,b) { return sortAsc ? new Date(a.date) - new Date(b.date) : new Date(b.date) - new Date(a.date); });
 
   $count.textContent = list.length;
   updateFilters();
@@ -325,6 +328,7 @@ function toggleLang() {
   var searchLabel = document.querySelector('label[for="search"]');
   if (searchLabel) searchLabel.textContent = lang === 'he' ? 'חיפוש רשומות' : 'Search entries';
 
+  updateSortBtn();
   buildCats();
   buildTags();
   render();
@@ -335,9 +339,22 @@ function toggleLang() {
   }
 }
 
+/* ── Sort toggle ── */
+function toggleSort() {
+  sortAsc = !sortAsc;
+  updateSortBtn();
+  render();
+}
+function updateSortBtn() {
+  if (!$sortBtn) return;
+  $sortBtn.textContent = sortAsc ? L[lang].oldestFirst : L[lang].newestFirst;
+  $sortBtn.setAttribute('aria-label', sortAsc ? L[lang].oldestFirst : L[lang].newestFirst);
+}
+
 /* ── Events ── */
 function wireEvents() {
   $langBtn.addEventListener('click', toggleLang);
+  if ($sortBtn) $sortBtn.addEventListener('click', toggleSort);
   $dClose.addEventListener('click', closeDrawer);
   $dBack.addEventListener('click', closeDrawer);
   document.addEventListener('keydown', function(e) {
