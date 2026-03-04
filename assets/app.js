@@ -31,8 +31,8 @@ const SEV = {
 };
 
 const L = {
-  he: { all:'הכל', search:'חיפוש...', noResults:'לא נמצאו רשומות', noResultsSub:'נסה לשנות את החיפוש או הפילטר', related:'רשומות קשורות', filtering:'מסנן:', switchLang:'Switch to English', newestFirst:'חדש → ישן', oldestFirst:'ישן → חדש' },
-  en: { all:'All', search:'Search...', noResults:'No entries found', noResultsSub:'Try adjusting your search or filters', related:'Related Entries', filtering:'Filtering:', switchLang:'עבור לעברית', newestFirst:'Newest first', oldestFirst:'Oldest first' }
+  he: { all:'הכל', search:'חיפוש...', noResults:'לא נמצאו רשומות', noResultsSub:'נסה לשנות את החיפוש או הפילטר', related:'רשומות קשורות', filtering:'מסנן:', switchLang:'Switch to English', newestFirst:'↓ חדש', oldestFirst:'↑ ישן' },
+  en: { all:'All', search:'Search...', noResults:'No entries found', noResultsSub:'Try adjusting your search or filters', related:'Related Entries', filtering:'Filtering:', switchLang:'עבור לעברית', newestFirst:'↓ New', oldestFirst:'↑ Old' }
 };
 
 /* ── Helpers ── */
