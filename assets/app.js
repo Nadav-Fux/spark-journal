@@ -4,11 +4,19 @@
 let entries = [];
 let categories = {};
 let lang = 'he';
+let section = 'log'; // 'log', 'posts', 'ideas'
 let filterCat = null;
 let filterTag = null;
 let query = '';
 let sortAsc = false; // false = newest first (default), true = oldest first
 let lastFocusedCard = null; // for focus restoration on drawer close
+
+// Which categories belong to which section
+const SECTION_CATS = {
+  log: ['system','monitoring','security','deployment','performance','features','research','future-plans','projects'],
+  posts: ['posts'],
+  ideas: ['ideas']
+};
 
 const CAT_COLORS = {
   system: '#06b6d4', monitoring: '#8b5cf6', security: '#ef4444',
@@ -90,9 +98,14 @@ function init() {
     .then(function(data) {
       entries = data.entries || (Array.isArray(data) ? data : []);
       categories = data.categories || {};
+      // Detect section from hash
+      if (location.hash.startsWith('#section/')) {
+        section = location.hash.slice(9) || 'log';
+      }
       buildCats();
       buildTags();
       updateSortBtn();
+      updateSectionTabs();
       render();
       wireEvents();
       handleHash();
@@ -109,9 +122,15 @@ if (document.readyState === 'loading') {
   init();
 }
 
+/* ── Section entries ── */
+function sectionEntries() {
+  var cats = SECTION_CATS[section] || [];
+  return entries.filter(function(e) { return cats.indexOf(e.category) !== -1; });
+}
+
 /* ── Render cards ── */
 function render() {
-  var list = entries.filter(function(e) {
+  var list = sectionEntries().filter(function(e) {
     if (filterCat && e.category !== filterCat) return false;
     if (filterTag && !(e.tags || []).includes(filterTag)) return false;
     if (query) {
@@ -177,13 +196,22 @@ function cardHtml(e) {
 
 /* ── Categories ── */
 function buildCats() {
+  var se = sectionEntries();
+  var sectionCatIds = SECTION_CATS[section] || [];
   var counts = {};
-  entries.forEach(function(e) { counts[e.category] = (counts[e.category] || 0) + 1; });
+  se.forEach(function(e) { counts[e.category] = (counts[e.category] || 0) + 1; });
+
+  // Only show sub-category filter if section has more than one category
+  if (sectionCatIds.length <= 1) {
+    $cats.innerHTML = '';
+    return;
+  }
 
   var html = '<button class="cat-btn' + (!filterCat ? ' active' : '') + '" data-cat="" aria-pressed="' + (!filterCat) + '">' +
-    '<span>' + esc(L[lang].all) + '</span><span class="cat-count">' + entries.length + '</span></button>';
+    '<span>' + esc(L[lang].all) + '</span><span class="cat-count">' + se.length + '</span></button>';
 
-  Object.keys(categories).forEach(function(id) {
+  sectionCatIds.forEach(function(id) {
+    if (!categories[id]) return;
     var active = filterCat === id;
     var color = CAT_COLORS[id] || '#888';
     html += '<button class="cat-btn' + (active ? ' active' : '') + '" data-cat="' + esc(id) + '" aria-pressed="' + active + '">' +
@@ -199,7 +227,7 @@ function buildCats() {
 /* ── Tags ── */
 function buildTags() {
   var tc = {};
-  entries.forEach(function(e) { (e.tags || []).forEach(function(t) { tc[t] = (tc[t] || 0) + 1; }); });
+  sectionEntries().forEach(function(e) { (e.tags || []).forEach(function(t) { tc[t] = (tc[t] || 0) + 1; }); });
   var sorted = Object.entries(tc).sort(function(a,b) { return b[1] - a[1]; }).slice(0, 15);
   if (!sorted.length) { $tags.innerHTML = ''; return; }
 
@@ -384,8 +412,28 @@ function trapFocus(panel) {
 /* ── Hash nav ── */
 function handleHash() {
   var h = location.hash;
+  if (h.startsWith('#section/')) {
+    var s = h.slice(9);
+    if (s !== section) setSection(s);
+    return;
+  }
   if (h.startsWith('#entry/')) {
-    openEntry(decodeURIComponent(h.slice(7)));
+    var entryId = decodeURIComponent(h.slice(7));
+    // Auto-switch section if entry belongs to a different one
+    var entry = entries.find(function(x) { return x.id === entryId; });
+    if (entry) {
+      for (var s in SECTION_CATS) {
+        if (SECTION_CATS[s].indexOf(entry.category) !== -1 && s !== section) {
+          section = s;
+          updateSectionTabs();
+          buildCats();
+          buildTags();
+          render();
+          break;
+        }
+      }
+    }
+    openEntry(entryId);
   } else if (!$drawer.hidden) {
     $drawer.hidden = true;
     document.body.classList.remove('drawer-open');
@@ -405,6 +453,7 @@ function toggleLang() {
   if (searchLabel) searchLabel.textContent = lang === 'he' ? 'חיפוש רשומות' : 'Search entries';
 
   updateSortBtn();
+  updateSectionTabs();
   buildCats();
   buildTags();
   render();
@@ -427,8 +476,34 @@ function updateSortBtn() {
   $sortBtn.setAttribute('aria-label', sortAsc ? L[lang].oldestFirst : L[lang].newestFirst);
 }
 
+/* ── Section switching ── */
+function setSection(s) {
+  section = s;
+  filterCat = null;
+  filterTag = null;
+  query = '';
+  $search.value = '';
+  updateSectionTabs();
+  buildCats();
+  buildTags();
+  render();
+}
+
+function updateSectionTabs() {
+  document.querySelectorAll('.section-tab').forEach(function(tab) {
+    var isActive = tab.dataset.section === section;
+    tab.classList.toggle('active', isActive);
+    tab.setAttribute('aria-pressed', isActive);
+  });
+}
+
 /* ── Events ── */
 function wireEvents() {
+  // Section tabs
+  document.querySelectorAll('.section-tab').forEach(function(tab) {
+    tab.addEventListener('click', function() { setSection(tab.dataset.section); });
+  });
+
   $langBtn.addEventListener('click', toggleLang);
   if ($sortBtn) $sortBtn.addEventListener('click', toggleSort);
   $dClose.addEventListener('click', closeDrawer);
