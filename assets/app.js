@@ -8,6 +8,7 @@ let filterCat = null;
 let filterTag = null;
 let query = '';
 let sortAsc = false; // false = newest first (default), true = oldest first
+let lastFocusedCard = null; // for focus restoration on drawer close
 
 const CAT_COLORS = {
   system: '#06b6d4', monitoring: '#8b5cf6', security: '#ef4444',
@@ -80,6 +81,7 @@ const $sortBtn = $('sort-btn');
 
 /* ── Boot ── */
 function init() {
+  $cards.innerHTML = '<p style="color:#888;padding:40px;text-align:center">טוען... / Loading...</p>';
   fetch('./data/entries.json')
     .then(function(res) {
       if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -116,8 +118,9 @@ function render() {
       var q = query.toLowerCase();
       var t = (loc(e,'title') || '').toLowerCase();
       var s = (loc(e,'summary') || '').toLowerCase();
+      var d = (loc(e,'details') || '').replace(/<[^>]+>/g, ' ').toLowerCase();
       var tags = (e.tags || []).join(' ').toLowerCase();
-      if (!t.includes(q) && !s.includes(q) && !tags.includes(q)) return false;
+      if (!t.includes(q) && !s.includes(q) && !d.includes(q) && !tags.includes(q)) return false;
     }
     return true;
   });
@@ -247,6 +250,10 @@ function setTag(tag) {
 function openEntry(id) {
   var e = entries.find(function(x) { return x.id === id; });
   if (!e) return;
+  // Save the currently focused element so we can restore focus on close
+  if (document.activeElement && document.activeElement !== document.body) {
+    lastFocusedCard = document.activeElement;
+  }
 
   var sev = e.severity || 'info';
   var sevText = esc((SEV[lang] || SEV.en)[sev] || sev);
@@ -338,12 +345,40 @@ function openEntry(id) {
   if ($dScrollTop) $dScrollTop.classList.remove('visible');
   if (location.hash !== '#entry/' + id) history.pushState(null, '', '#entry/' + id);
   $dClose.focus();
+  trapFocus($dPanel);
 }
 
 function closeDrawer() {
   $drawer.hidden = true;
   document.body.classList.remove('drawer-open');
   if (location.hash.startsWith('#entry/')) history.pushState(null, '', location.pathname);
+  // Restore focus to the card that triggered the drawer
+  if (lastFocusedCard) {
+    lastFocusedCard.focus();
+    lastFocusedCard = null;
+  }
+}
+
+/* ── Focus trap ── */
+var _trapHandler = null;
+function trapFocus(panel) {
+  // Remove any previous trap handler
+  if (_trapHandler) panel.removeEventListener('keydown', _trapHandler);
+  _trapHandler = function(ev) {
+    if (ev.key !== 'Tab') return;
+    var focusable = Array.prototype.slice.call(panel.querySelectorAll(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    ));
+    if (!focusable.length) return;
+    var first = focusable[0];
+    var last = focusable[focusable.length - 1];
+    if (ev.shiftKey) {
+      if (document.activeElement === first) { ev.preventDefault(); last.focus(); }
+    } else {
+      if (document.activeElement === last) { ev.preventDefault(); first.focus(); }
+    }
+  };
+  panel.addEventListener('keydown', _trapHandler);
 }
 
 /* ── Hash nav ── */

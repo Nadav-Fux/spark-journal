@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://journal.nvision.me/sitemap.xml
