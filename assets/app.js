@@ -1,4 +1,4 @@
-/* Spark Journal — app.js */
+/* Spark Log — app.js */
 'use strict';
 
 let entries = [];
@@ -12,7 +12,8 @@ let sortAsc = false; // false = newest first (default), true = oldest first
 const CAT_COLORS = {
   system: '#06b6d4', monitoring: '#8b5cf6', security: '#ef4444',
   deployment: '#22c55e', performance: '#f59e0b', features: '#a855f7',
-  research: '#ec4899', 'future-plans': '#14b8a6', projects: '#f97316'
+  research: '#ec4899', 'future-plans': '#14b8a6', projects: '#f97316',
+  posts: '#3b82f6', ideas: '#fbbf24'
 };
 
 const SEV = {
@@ -278,7 +279,47 @@ function openEntry(id) {
     related = '<div class="drawer-related"><h3>' + L[lang].related + '</h3>' + links + '</div>';
   }
 
-  $dBody.innerHTML = detailsHtml + related;
+  // Add copy button for posts category
+  var copyBtn = '';
+  if (e.category === 'posts') {
+    copyBtn = '<div style="margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap">' +
+      '<button class="copy-btn" data-target="details" style="padding:8px 16px;background:#3b82f6;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:0.9em">📋 ' + (lang === 'he' ? 'העתק הכל' : 'Copy All') + '</button>' +
+      '</div>';
+  }
+  $dBody.innerHTML = copyBtn + detailsHtml + related;
+
+  // Wire copy button for posts
+  $dBody.querySelectorAll('.copy-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var text = $dBody.innerText || $dBody.textContent || '';
+      // Remove the button text itself from the copy
+      text = text.replace(/^.*Copy All.*\n?/m, '').replace(/^.*העתק הכל.*\n?/m, '').trim();
+      navigator.clipboard.writeText(text).then(function() {
+        btn.textContent = lang === 'he' ? '✓ הועתק!' : '✓ Copied!';
+        btn.style.background = '#22c55e';
+        setTimeout(function() {
+          btn.innerHTML = '📋 ' + (lang === 'he' ? 'העתק הכל' : 'Copy All');
+          btn.style.background = '#3b82f6';
+        }, 2000);
+      }).catch(function() {
+        // Fallback for older browsers
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        btn.textContent = lang === 'he' ? '✓ הועתק!' : '✓ Copied!';
+        btn.style.background = '#22c55e';
+        setTimeout(function() {
+          btn.innerHTML = '📋 ' + (lang === 'he' ? 'העתק הכל' : 'Copy All');
+          btn.style.background = '#3b82f6';
+        }, 2000);
+      });
+    });
+  });
 
   // Wire tag clicks in drawer
   $dHead.querySelectorAll('.card-tag').forEach(function(el) {

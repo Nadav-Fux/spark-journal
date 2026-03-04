@@ -1,2 +1,2 @@
 # spark-journal
-Spark System Changelog — journal.nvision.me
+Spark Log — System changelog & knowledge base at journal.nvision.me
