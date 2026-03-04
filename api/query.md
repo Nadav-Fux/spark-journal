@@ -1,6 +1,6 @@
-# Spark Journal API — How to Query
+# Spark Log API — How to Query
 
-The journal is a static JSON file at `https://journal.nvision.me/data/entries.json`.
+The log is a static JSON file at `https://journal.nvision.me/data/entries.json`.
 No Supabase, no RAG, no database needed — just fetch and parse.
 
 ## Quick Query (Bash)
@@ -42,6 +42,8 @@ for e in data['entries']:
 - `research` — Research/analysis, "question about..." topics
 - `future-plans` — Discussed but not yet implemented
 - `projects` — TRAE, vibe-code-news specific work
+- `posts` — Blog posts, LinkedIn posts, social content
+- `ideas` — Future project ideas, concepts
 
 ## Entry Schema
 
@@ -65,7 +67,7 @@ for e in data['entries']:
 
 ## Why No Supabase / RAG?
 
-- **34 entries** (1.1MB JSON) — trivially small, loads in <500ms
+- **57 entries** (~1.5MB JSON) — trivially small, loads in <500ms
 - GLM-5 can parse JSON natively — no vector embeddings needed
 - Structured data with categories/tags — search by field, not semantic similarity
 - Adding entries = edit JSON + push to GitHub → auto-deploys

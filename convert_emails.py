@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Convert email JSON files to Spark Journal entries.
+"""Convert email JSON files to Spark Log entries.
 Reads /tmp/emails/*.json, creates bilingual entries with executive summaries + full content."""
 import json, os, re
 from html import unescape

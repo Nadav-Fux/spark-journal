@@ -123,7 +123,7 @@ def deploy():
 
 
 def build_email_html(entry):
-    """Build a styled email from a journal entry."""
+    """Build a styled email from a log entry."""
     cat = entry.get("category", "system")
     sev = entry.get("severity", "info")
     cat_color = CATEGORY_COLORS.get(cat, "#06b6d4")
@@ -215,7 +215,7 @@ def main():
 
     print("\n=== Done! ===")
     print(f"  Entry: {entry.get('id', '?')}")
-    print(f"  Journal: https://journal.nvision.me")
+    print(f"  Spark Log: https://journal.nvision.me")
     print(f"  Email: {EMAIL_TO}")
 
 
