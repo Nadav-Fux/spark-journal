@@ -86,6 +86,7 @@ const $dPanel  = $('drawer-panel');
 const $dScrollTop = $('drawer-scroll-top');
 const $filters = $('filters');
 const $sortBtn = $('sort-btn');
+const $refreshBtn = $('refresh-btn');
 
 /* ── Boot ── */
 function init() {
@@ -476,6 +477,27 @@ function updateSortBtn() {
   $sortBtn.setAttribute('aria-label', sortAsc ? L[lang].oldestFirst : L[lang].newestFirst);
 }
 
+/* ── Refresh ── */
+function refreshData() {
+  if ($refreshBtn) $refreshBtn.classList.add('spinning');
+  fetch('./data/entries.json?t=' + Date.now())
+    .then(function(res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    })
+    .then(function(data) {
+      entries = data.entries || (Array.isArray(data) ? data : []);
+      categories = data.categories || {};
+      buildCats();
+      buildTags();
+      render();
+      if ($refreshBtn) setTimeout(function() { $refreshBtn.classList.remove('spinning'); }, 600);
+    })
+    .catch(function() {
+      if ($refreshBtn) $refreshBtn.classList.remove('spinning');
+    });
+}
+
 /* ── Section switching ── */
 function setSection(s) {
   section = s;
@@ -506,6 +528,7 @@ function wireEvents() {
 
   $langBtn.addEventListener('click', toggleLang);
   if ($sortBtn) $sortBtn.addEventListener('click', toggleSort);
+  if ($refreshBtn) $refreshBtn.addEventListener('click', refreshData);
   $dClose.addEventListener('click', closeDrawer);
   $dBack.addEventListener('click', closeDrawer);
   document.addEventListener('keydown', function(e) {

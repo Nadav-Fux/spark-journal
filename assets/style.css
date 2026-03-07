@@ -120,6 +120,18 @@ a:focus-visible { border-radius: 4px; }
   transition: background .2s, color .2s;
 }
 .lang-btn:hover { background: var(--primary); color: #000; }
+.refresh-btn {
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--border-hover);
+  color: var(--dim);
+  transition: background .2s, color .2s, border-color .2s, transform .5s;
+}
+.refresh-btn:hover { border-color: var(--primary); color: var(--primary); }
+.refresh-btn.spinning svg { animation: spin .6s ease-in-out; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
 .sort-btn {
   font-size: 12px; font-weight: 500;
   padding: 5px 14px;
