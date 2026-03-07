@@ -13,7 +13,7 @@ let lastFocusedCard = null; // for focus restoration on drawer close
 
 // Which categories belong to which section
 const SECTION_CATS = {
-  log: ['system','monitoring','security','deployment','performance','features','research','future-plans','projects'],
+  log: ['system','monitoring','security','deployment','performance','features','research','future-plans','projects','reports'],
   posts: ['posts'],
   ideas: ['ideas']
 };
@@ -22,7 +22,7 @@ const CAT_COLORS = {
   system: '#06b6d4', monitoring: '#8b5cf6', security: '#ef4444',
   deployment: '#22c55e', performance: '#f59e0b', features: '#a855f7',
   research: '#ec4899', 'future-plans': '#14b8a6', projects: '#f97316',
-  posts: '#3b82f6', ideas: '#fbbf24'
+  reports: '#60a5fa', posts: '#3b82f6', ideas: '#fbbf24'
 };
 
 const SEV = {
