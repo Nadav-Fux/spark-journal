@@ -344,6 +344,70 @@ a:focus-visible { border-radius: 4px; }
 .card:hover .card-arrow { color: var(--primary); }
 [dir="rtl"] .card-arrow { transform: scaleX(-1); }
 
+/* Download buttons on cards */
+.card-dl-wrap {
+  display: flex;
+  gap: 4px;
+  margin-inline-start: auto;
+  opacity: 0;
+  transition: opacity .2s;
+}
+.card:hover .card-dl-wrap,
+.card:focus-within .card-dl-wrap { opacity: 1; }
+.card-dl-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 6px;
+  font-size: 10px;
+  color: var(--dim);
+  background: rgba(255,255,255,.06);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.card-dl-btn:hover {
+  color: var(--primary);
+  background: rgba(6,182,212,.1);
+  border-color: var(--primary);
+}
+.card-dl-btn svg { flex-shrink: 0; }
+.dl-label { font-weight: 600; letter-spacing: .5px; }
+
+/* Drawer action buttons */
+.drawer-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.drawer-action-btn {
+  padding: 8px 16px;
+  font-size: 0.85em;
+  font-weight: 500;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface2);
+  color: var(--text);
+  transition: all .2s;
+}
+.drawer-action-btn:hover {
+  border-color: var(--primary);
+  background: rgba(6,182,212,.1);
+  color: var(--primary);
+}
+.drawer-action-btn.copy-btn {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: #fff;
+}
+.drawer-action-btn.copy-btn:hover {
+  background: #2563eb;
+}
+
 /* Category stripe colors */
 .card[data-cat="system"]      { --stripe: #06b6d4; }
 .card[data-cat="monitoring"]  { --stripe: #8b5cf6; }

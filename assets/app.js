@@ -51,6 +51,83 @@ function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+/* ── Download entry as file ── */
+function stripHtml(html) {
+  var tmp = document.createElement('div');
+  tmp.textContent = ''; // clear safely
+  // Use DOMParser for safe HTML-to-text conversion (no script execution)
+  var doc = new DOMParser().parseFromString(html, 'text/html');
+  return (doc.body.textContent || '').trim();
+}
+
+function entryToText(e) {
+  var title = loc(e, 'title') || '';
+  var summary = loc(e, 'summary') || '';
+  var details = loc(e, 'details') || '';
+  var date = e.date || '';
+  var cat = catLabel(e.category);
+  var sev = (SEV[lang] || SEV.en)[e.severity || 'info'] || e.severity || 'info';
+  var tags = (e.tags || []).join(', ');
+  var detailsText = isHtml(details) ? stripHtml(details) : details;
+
+  var lines = [];
+  lines.push(title);
+  lines.push('='.repeat(Math.min(title.length * 2, 60)));
+  lines.push('');
+  if (date) lines.push((lang === 'he' ? 'תאריך' : 'Date') + ': ' + fmtDate(date));
+  if (cat) lines.push((lang === 'he' ? 'קטגוריה' : 'Category') + ': ' + cat);
+  if (sev) lines.push((lang === 'he' ? 'חומרה' : 'Severity') + ': ' + sev);
+  if (tags) lines.push((lang === 'he' ? 'תגיות' : 'Tags') + ': ' + tags);
+  lines.push('');
+  if (summary) { lines.push(summary); lines.push(''); }
+  if (detailsText) { lines.push(detailsText); }
+  return lines.join('\n');
+}
+
+function entryToMarkdown(e) {
+  var title = loc(e, 'title') || '';
+  var summary = loc(e, 'summary') || '';
+  var details = loc(e, 'details') || '';
+  var date = e.date || '';
+  var cat = catLabel(e.category);
+  var sev = (SEV[lang] || SEV.en)[e.severity || 'info'] || e.severity || 'info';
+  var tags = (e.tags || []).map(function(t) { return '`' + t + '`'; }).join(', ');
+  var detailsText = isHtml(details) ? stripHtml(details) : details;
+
+  var lines = [];
+  lines.push('# ' + title);
+  lines.push('');
+  var meta = [];
+  if (date) meta.push('**' + (lang === 'he' ? 'תאריך' : 'Date') + ':** ' + fmtDate(date));
+  if (cat) meta.push('**' + (lang === 'he' ? 'קטגוריה' : 'Category') + ':** ' + cat);
+  if (sev) meta.push('**' + (lang === 'he' ? 'חומרה' : 'Severity') + ':** ' + sev);
+  if (tags) meta.push('**' + (lang === 'he' ? 'תגיות' : 'Tags') + ':** ' + tags);
+  if (meta.length) { lines.push(meta.join(' | ')); lines.push(''); }
+  if (summary) { lines.push('> ' + summary); lines.push(''); }
+  lines.push('---');
+  lines.push('');
+  if (detailsText) { lines.push(detailsText); }
+  return lines.join('\n');
+}
+
+function downloadEntry(id, format) {
+  var e = entries.find(function(x) { return x.id === id; });
+  if (!e) return;
+  var content = format === 'md' ? entryToMarkdown(e) : entryToText(e);
+  var ext = format === 'md' ? '.md' : '.txt';
+  var mime = format === 'md' ? 'text/markdown' : 'text/plain';
+  var slug = (loc(e, 'title') || e.id).replace(/[^\w\u0590-\u05FF\s-]/g, '').replace(/\s+/g, '-').slice(0, 50);
+  var blob = new Blob([content], { type: mime + ';charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = slug + ext;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 function fmtDate(iso) {
   if (!iso) return '';
   try {
@@ -169,6 +246,9 @@ function render() {
   $cards.querySelectorAll('.card-tag').forEach(function(el) {
     el.addEventListener('click', function(ev) { ev.stopPropagation(); setTag(el.dataset.tag); });
   });
+  $cards.querySelectorAll('.card-dl-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(ev) { ev.stopPropagation(); downloadEntry(btn.dataset.id, btn.dataset.fmt); });
+  });
 }
 
 function cardHtml(e) {
@@ -187,6 +267,16 @@ function cardHtml(e) {
       '<span class="badge badge-' + esc(sev) + '">' + sevText + '</span>' +
       '<span class="cat-label">' + cat + '</span>' +
       '<span class="card-date">' + date + '</span>' +
+      '<span class="card-dl-wrap">' +
+        '<button class="card-dl-btn" data-id="' + esc(e.id) + '" data-fmt="txt" title="' + (lang === 'he' ? 'הורד TXT' : 'Download TXT') + '" aria-label="Download TXT">' +
+          '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2v8M5 7l3 3 3-3M3 12h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+          '<span class="dl-label">TXT</span>' +
+        '</button>' +
+        '<button class="card-dl-btn" data-id="' + esc(e.id) + '" data-fmt="md" title="' + (lang === 'he' ? 'הורד MD' : 'Download MD') + '" aria-label="Download MD">' +
+          '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2v8M5 7l3 3 3-3M3 12h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+          '<span class="dl-label">MD</span>' +
+        '</button>' +
+      '</span>' +
       '<svg class="card-arrow" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>' +
     '</div>' +
     '<h2 class="card-title">' + title + '</h2>' +
@@ -315,30 +405,62 @@ function openEntry(id) {
     related = '<div class="drawer-related"><h3>' + L[lang].related + '</h3>' + links + '</div>';
   }
 
-  // Add copy button for posts category
-  var copyBtn = '';
+  // Add action buttons bar (copy for posts + download for all)
+  var actionBar = document.createElement('div');
+  actionBar.className = 'drawer-actions';
+
   if (e.category === 'posts') {
-    copyBtn = '<div style="margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap">' +
-      '<button class="copy-btn" data-target="details" style="padding:8px 16px;background:#3b82f6;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:0.9em">📋 ' + (lang === 'he' ? 'העתק הכל' : 'Copy All') + '</button>' +
-      '</div>';
+    var copyBtn = document.createElement('button');
+    copyBtn.className = 'drawer-action-btn copy-btn';
+    copyBtn.dataset.target = 'details';
+    copyBtn.textContent = lang === 'he' ? 'העתק הכל' : 'Copy All';
+    actionBar.appendChild(copyBtn);
   }
-  $dBody.innerHTML = copyBtn + detailsHtml + related;
+
+  var dlTxt = document.createElement('button');
+  dlTxt.className = 'drawer-action-btn dl-btn';
+  dlTxt.textContent = lang === 'he' ? 'הורד TXT' : 'Download TXT';
+  dlTxt.addEventListener('click', function() { downloadEntry(e.id, 'txt'); });
+  actionBar.appendChild(dlTxt);
+
+  var dlMd = document.createElement('button');
+  dlMd.className = 'drawer-action-btn dl-btn';
+  dlMd.textContent = lang === 'he' ? 'הורד MD' : 'Download MD';
+  dlMd.addEventListener('click', function() { downloadEntry(e.id, 'md'); });
+  actionBar.appendChild(dlMd);
+
+  // Build body content safely
+  var bodyContent = document.createElement('div');
+  // detailsHtml comes from our own entries.json data, parsed via DOMParser for safety
+  var parsedDetails = new DOMParser().parseFromString(detailsHtml, 'text/html');
+  while (parsedDetails.body.firstChild) {
+    bodyContent.appendChild(parsedDetails.body.firstChild);
+  }
+
+  // Add related section
+  if (related) {
+    var parsedRelated = new DOMParser().parseFromString(related, 'text/html');
+    while (parsedRelated.body.firstChild) {
+      bodyContent.appendChild(parsedRelated.body.firstChild);
+    }
+  }
+
+  $dBody.textContent = '';
+  $dBody.appendChild(actionBar);
+  $dBody.appendChild(bodyContent);
 
   // Wire copy button for posts
   $dBody.querySelectorAll('.copy-btn').forEach(function(btn) {
     btn.addEventListener('click', function() {
-      var text = $dBody.innerText || $dBody.textContent || '';
-      // Remove the button text itself from the copy
-      text = text.replace(/^.*Copy All.*\n?/m, '').replace(/^.*העתק הכל.*\n?/m, '').trim();
+      var text = (bodyContent.innerText || bodyContent.textContent || '').trim();
       navigator.clipboard.writeText(text).then(function() {
         btn.textContent = lang === 'he' ? '✓ הועתק!' : '✓ Copied!';
         btn.style.background = '#22c55e';
         setTimeout(function() {
-          btn.innerHTML = '📋 ' + (lang === 'he' ? 'העתק הכל' : 'Copy All');
-          btn.style.background = '#3b82f6';
+          btn.textContent = lang === 'he' ? 'העתק הכל' : 'Copy All';
+          btn.style.background = '';
         }, 2000);
       }).catch(function() {
-        // Fallback for older browsers
         var ta = document.createElement('textarea');
         ta.value = text;
         ta.style.position = 'fixed';
@@ -350,8 +472,8 @@ function openEntry(id) {
         btn.textContent = lang === 'he' ? '✓ הועתק!' : '✓ Copied!';
         btn.style.background = '#22c55e';
         setTimeout(function() {
-          btn.innerHTML = '📋 ' + (lang === 'he' ? 'העתק הכל' : 'Copy All');
-          btn.style.background = '#3b82f6';
+          btn.textContent = lang === 'he' ? 'העתק הכל' : 'Copy All';
+          btn.style.background = '';
         }, 2000);
       });
     });
