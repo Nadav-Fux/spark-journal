@@ -70,7 +70,7 @@ def deploy():
     # Get the latest entry title for the commit message
     with open(ENTRIES_FILE, "r") as f:
         data = json.load(f)
-    last_entry = data["entries"][-1]
+    last_entry = data["entries"][0]  # entries are newest-first
     title = last_entry.get("title_en", "New entry")
 
     rc, out, err = run(f'git commit -m "Add log entry: {title}"')
