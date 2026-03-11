@@ -141,7 +141,7 @@ def build_email_html(entry):
         for t in tags[:8]
     )
 
-    log_url = f"https://journal.nvision.me/#entry/{entry_id}" if entry_id else "https://journal.nvision.me"
+    log_url = f"https://log.nvision.me/#entry/{entry_id}" if entry_id else "https://log.nvision.me"
 
     return f"""<!DOCTYPE html>
 <html><head><meta charset="UTF-8"></head>
@@ -167,7 +167,7 @@ def build_email_html(entry):
 
 <tr><td style="background:linear-gradient(135deg,#0f172a,#1e293b);border:1px solid #1e3a4a;border-radius:0 0 12px 12px;padding:24px 36px;text-align:center;">
 <a href="{log_url}" style="display:inline-block;background:#06b6d4;color:#0a0a14;padding:10px 28px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;letter-spacing:0.5px;">Read Full Report</a>
-<p style="margin:16px 0 0;font-size:12px;color:#334155;">Spark Log — journal.nvision.me</p>
+<p style="margin:16px 0 0;font-size:12px;color:#334155;">Spark Log — log.nvision.me</p>
 </td></tr>
 
 </table></td></tr></table></body></html>"""
@@ -185,7 +185,7 @@ def send_email(entry):
 
     # Plain-text fallback
     summary = entry.get("summary_en", "")
-    text_content = f"{subject}\n\n{summary}\n\nRead full report: https://journal.nvision.me (Spark Log)"
+    text_content = f"{subject}\n\n{summary}\n\nRead full report: https://log.nvision.me (Spark Log)"
 
     try:
         from agentmail import AgentMail
@@ -215,7 +215,7 @@ def main():
 
     print("\n=== Done! ===")
     print(f"  Entry: {entry.get('id', '?')}")
-    print(f"  Spark Log: https://journal.nvision.me")
+    print(f"  Spark Log: https://log.nvision.me")
     print(f"  Email: {EMAIL_TO}")
 
 

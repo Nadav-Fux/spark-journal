@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent System Content Hub</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #08091a;
+    --bg2:      #0d0f24;
+    --bg3:      #121530;
+    --text:     #c8b89a;
+    --text2:    #9a8e7a;
+    --brass:    #d4a574;
+    --brass2:   #c49060;
+    --border:   rgba(212,165,116,0.15);
+    --border2:  rgba(212,165,116,0.30);
+    --glow:     rgba(212,165,116,0.08);
+    --success:  #6db88a;
+    --radius:   10px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ─────────────────────────────────────────────── */
+  header {
+    background: linear-gradient(180deg, #0b0d22 0%, var(--bg) 100%);
+    border-bottom: 1px solid var(--border2);
+    padding: 2rem 1.5rem 1.5rem;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+  }
+
+  header h1 {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: clamp(1.4rem, 4vw, 2.2rem);
+    color: var(--brass);
+    letter-spacing: 0.04em;
+    text-shadow: 0 0 40px rgba(212,165,116,0.25);
+    margin-bottom: 0.3rem;
+  }
+
+  header p {
+    font-size: 0.88rem;
+    color: var(--text2);
+    letter-spacing: 0.08em;
+  }
+
+  /* ── TABS ────────────────────────────────────────────────── */
+  .tabs-wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 1.2rem 1.5rem 0;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .tab-btn {
+    background: var(--bg2);
+    color: var(--text2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.45rem 1.1rem;
+    font-size: 0.83rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    letter-spacing: 0.03em;
+  }
+
+  .tab-btn:hover { border-color: var(--brass); color: var(--brass); }
+
+  .tab-btn.active {
+    background: rgba(212,165,116,0.12);
+    border-color: var(--brass);
+    color: var(--brass);
+    font-weight: 600;
+  }
+
+  /* ── CONTENT SECTIONS ──────────────────────────────────── */
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  /* ── SECTION TITLE ─────────────────────────────────────── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .section-header h2 {
+    font-family: Georgia, serif;
+    font-size: 1.4rem;
+    color: var(--brass);
+  }
+
+  .badge {
+    background: rgba(212,165,116,0.12);
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    font-size: 0.75rem;
+    padding: 0.2rem 0.6rem;
+    color: var(--text2);
+    letter-spacing: 0.05em;
+  }
+
+  /* ── COPY BLOCK ─────────────────────────────────────────── */
+  .copy-block {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    transition: border-color 0.2s;
+  }
+
+  .copy-block:hover { border-color: var(--border2); }
+
+  .copy-block-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1.2rem;
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .copy-block-title {
+    font-size: 0.85rem;
+    color: var(--brass);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+
+  .copy-block-meta {
+    font-size: 0.75rem;
+    color: var(--text2);
+  }
+
+  .copy-block-meta.warn { color: #e07a5f; }
+
+  .copy-btn {
+    background: rgba(212,165,116,0.10);
+    color: var(--brass);
+    border: 1px solid var(--border2);
+    border-radius: 5px;
+    padding: 0.35rem 0.9rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    letter-spacing: 0.03em;
+  }
+
+  .copy-btn:hover {
+    background: rgba(212,165,116,0.20);
+    border-color: var(--brass);
+  }
+
+  .copy-btn.copied {
+    background: rgba(109,184,138,0.15);
+    border-color: var(--success);
+    color: var(--success);
+  }
+
+  .copy-block-body {
+    padding: 1.4rem 1.6rem;
+    direction: rtl;
+    text-align: right;
+    font-size: 0.93rem;
+    line-height: 1.85;
+    color: var(--text);
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 480px;
+    overflow-y: auto;
+  }
+
+  .copy-block-body.blog { max-height: 600px; }
+
+  .copy-block-body::-webkit-scrollbar { width: 5px; }
+  .copy-block-body::-webkit-scrollbar-track { background: transparent; }
+  .copy-block-body::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  /* ── FB GRID ────────────────────────────────────────────── */
+  .fb-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1.2rem;
+  }
+
+  .fb-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .fb-card:hover {
+    border-color: var(--border2);
+    transform: translateY(-2px);
+  }
+
+  .fb-card-header {
+    padding: 0.7rem 1rem;
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .fb-post-num {
+    font-size: 0.72rem;
+    color: var(--text2);
+    background: rgba(212,165,116,0.08);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 0.15rem 0.5rem;
+    letter-spacing: 0.05em;
+  }
+
+  .fb-post-topic {
+    font-size: 0.8rem;
+    color: var(--brass);
+    font-weight: 600;
+    flex: 1;
+    text-align: right;
+  }
+
+  .fb-card-body {
+    padding: 1rem 1.1rem;
+    direction: rtl;
+    text-align: right;
+    font-size: 0.87rem;
+    line-height: 1.8;
+    color: var(--text);
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  .fb-card-body::-webkit-scrollbar { width: 4px; }
+  .fb-card-body::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  .fb-card-footer {
+    padding: 0.6rem 1rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .char-count {
+    font-size: 0.72rem;
+    color: var(--text2);
+  }
+
+  /* ── FOOTER ─────────────────────────────────────────────── */
+  footer {
+    text-align: center;
+    padding: 2rem;
+    font-size: 0.78rem;
+    color: var(--text2);
+    border-top: 1px solid var(--border);
+    letter-spacing: 0.05em;
+  }
+
+  /* ── RESPONSIVE ─────────────────────────────────────────── */
+  @media (max-width: 600px) {
+    .copy-block-body { padding: 1rem; font-size: 0.88rem; }
+    .copy-block-header { gap: 0.5rem; }
+    .fb-grid { grid-template-columns: 1fr; }
+    header { padding: 1.2rem 1rem 1rem; }
+    .tabs-wrap { gap: 0.35rem; }
+    .tab-btn { font-size: 0.78rem; padding: 0.4rem 0.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⟡ Agent System Content Hub</h1>
+  <p>ALL CONTENT PIECES · CLICK TO COPY · READY TO PUBLISH</p>
+</header>
+
+<nav class="tabs-wrap">
+  <button class="tab-btn active" data-tab="blog" onclick="showTab('blog',this)">📝 פוסט בלוג</button>
+  <button class="tab-btn" data-tab="linkedin" onclick="showTab('linkedin',this)">💼 LinkedIn</button>
+  <button class="tab-btn" data-tab="facebook" onclick="showTab('facebook',this)">📘 סדרת Facebook</button>
+</nav>
+
+<main>
+
+<!-- ═══════════════════════════════════════════════
+     TAB 1: BLOG POST
+═══════════════════════════════════════════════ -->
+<div id="tab-blog" class="tab-content active">
+  <div class="section-header">
+    <h2>📝 פוסט בלוג עברית</h2>
+    <span class="badge">3000+ מילים</span>
+  </div>
+
+  <div class="copy-block">
+    <div class="copy-block-header">
+      <span class="copy-block-title">איך לבנות מערכת סוכנים אוטונומיים עם OpenClaw — מדריך מעשי</span>
+      <div style="display:flex;align-items:center;gap:0.6rem;">
+        <span class="copy-block-meta" id="blog-chars">מחשב...</span>
+        <button class="copy-btn" onclick="copyBlock('blog-text', this)">העתק הכל</button>
+      </div>
+    </div>
+    <div class="copy-block-body blog" id="blog-text">איך לבנות מערכת סוכנים אוטונומיים עם OpenClaw — מדריך מעשי
+
+מאת נדב פוקס
+
+---
+
+לפני שנה, אם הייתי אומר לכם שיש לי חמישה סוכני AI שעובדים במקביל, מנהלים פורטפוליו מסחר, שומרים על תשתית, כותבים קוד ומייצרים תוכן — הייתם בטח מחייכים מנומס ומשנים נושא. היום זה המציאות שלי, וזה יותר ופחות מסובך ממה שחשבתם.
+
+הפוסט הזה הוא מדריך מעשי, לא שיר הלל לטכנולוגיה. אני אראה לכם בדיוק איך בנינו מערכת סוכנים אוטונומיים מלאה — כולל קוד, ארכיטקטורה, טעויות שעשינו, ואיך הכל בא יחד.
+
+---
+
+## מה זה בכלל OpenClaw?
+
+OpenClaw הוא framework לניהול סוכני AI שרצים לאורך זמן. לא chatbot. לא אוטומציה פשוטה. סוכן אמיתי שיש לו:
+
+- **זיכרון** — הוא זוכר מה קרה בסשנים קודמים
+- **כלים** — Bash, קוד, גישה לשירותים חיצוניים
+- **לוח זמנים** — cron jobs שמריצים אותו אוטומטית
+- **ערוצי תקשורת** — Telegram, WhatsApp, Email
+- **יכולת ליצור סוכנים נוספים** — subagents שמבצעים משימות בתוך הסשן
+
+הבסיס של OpenClaw הוא קובץ אחד: `openclaw.json`. שם מגדירים הכל.
+
+---
+
+## ארכיטקטורת המערכת שלנו
+
+אצלנו יש כיום 5 סוכנים פעילים, כל אחד עם אחריות ברורה:
+
+**Spark** — הסוכן הראשי. מטפל בבקשות כלליות, מנהל פרויקטים, עונה על שאלות. הוא ה"מנהל" של המערכת.
+
+**R2-Guard** — שומר הנתונים. מנטר את ה-R2 buckets של Cloudflare, מוודא שאין נתונים שנפגעו, מדווח על אנומליות. רץ כל שעה.
+
+**Spark Trader** — הסוכן שמנהל פורטפוליו מסחר של מיליון דולר על הנייר. 7 cron jobs, 6 אסטרטגיות. זה יקבל פרק שלם בהמשך.
+
+**Spark Dev** — מתמחה בקוד. כשיש משימת פיתוח רצינית, Spark מעביר אותה ל-Dev שמתמקד רק בקוד ולא מתבלבל.
+
+**Spark Creative** — תוכן ועיצוב. פוסטים, סקריפטים, רעיונות. הוא "חושב" אחרת מ-Dev.
+
+למה לחלק? כי סוכן שעושה הכל טוב בשום דבר. התמחות = עמוקות. כל סוכן יש לו system prompt שמכוון אותו לתחום שלו, כלים רלוונטיים, וזיכרון נפרד שלא מתערבב עם השאר.
+
+---
+
+## הקמת הסביבה — openclaw.json
+
+כל סוכן מוגדר בתיקייה משלו. המבנה הבסיסי:
+
+```
+/agents/
+  spark/
+    openclaw.json
+    bootstrap.md
+    memory/
+  spark-trader/
+    openclaw.json
+    bootstrap.md
+    memory/
+```
+
+קובץ openclaw.json לסוכן בסיסי נראה ככה:
+
+```json
+{
+  "name": "Spark",
+  "model": "claude-opus-4-5",
+  "workspace": "/workspace/spark",
+  "bootstrapFile": "bootstrap.md",
+  "bootstrapMaxChars": 12000,
+  "channels": {
+    "telegram": {
+      "token": "BOT_TOKEN_HERE",
+      "chatId": "CHAT_ID_HERE"
+    }
+  },
+  "crons": [
+    {
+      "schedule": "0 * * * *",
+      "task": "הרץ בדיקת בריאות — בדוק שכל הסרוויסים עולים, דווח בטלגרם אם יש בעיות"
+    }
+  ],
+  "allowAgents": true,
+  "tools": ["bash", "read", "write", "edit"]
+}
+```
+
+הנה המפתחות שחשוב להבין:
+
+### bootstrapFile ו-bootstrapMaxChars
+
+קובץ ה-bootstrap הוא ה"זיכרון" הפרמננטי של הסוכן. כל פעם שהסוכן מתחיל סשן, הוא קורא את הקובץ הזה קודם. זה המקום שם שומרים:
+
+- מי הסוכן, מה האחריות שלו
+- credentials ושמות שרתים
+- החלטות ארכיטקטורה שצריך לזכור
+- לינקים לדוקומנטציה
+- כללים קריטיים ("לעולם אל תמחק נתונים מ-production בלי אישור")
+
+`bootstrapMaxChars` קובע כמה תווים לקרוא מהקובץ. עצה: שמרו אותו ב-12,000-15,000 תווים מקסימום. יותר מזה — הסוכן מתחיל "לאבד" מהקשר שימושי.
+
+### allowAgents
+
+זה הדבר שמאפשר לסוכן ליצור subagents. **חשוב מאוד:** `allowAgents: true` חייב להיות ברמת הרות של ה-JSON, לא בתוך שדה אחר. טעינו בזה בהתחלה ותהינו למה subagents לא עובדים.
+
+---
+
+## מערכת הסובאגנטים
+
+כשסוכן ראשי מקבל משימה מורכבת, הוא יכול לפצל אותה. דוגמה אמיתית מהמערכת שלנו:
+
+**בקשה לסוכן Spark:** "תנתח את הביצועים של כל הסטרטגיות ותכין דוח מפורט"
+
+**מה Spark עושה:**
+1. יוצר subagent בשם "AnalysisWorker"
+2. נותן לו גישה לנתוני המסחר
+3. מגדיר לו משימה ספציפית: "קרא את הלוגים, חשב P&L לכל אסטרטגיה, החזר JSON"
+4. מקבל את התוצאה
+5. יוצר subagent שני: "ReportWriter"
+6. נותן לו את ה-JSON + מגדיר: "כתוב דוח מפורט בעברית עם גרפים ASCII"
+
+זה sessions_spawn בפעולה. הסוכן הראשי הוא המנהל, הsub-agents הם הצוות.
+
+**שליטה על עומק:**
+בקובץ ה-JSON אפשר להגדיר `maxAgentDepth: 2` — כלומר, subagent יכול ליצור sub-subagent, אבל לא מעבר לכך. זה מונע רקורסיה לא מבוקרת שאוכלת context וכסף.
+
+**הדרכה לsubagent:**
+כשסוכן ראשי יוצר subagent, הוא מעביר לו context מינימלי. **ברירת המחדל: הsubagent מתחיל סשן נקי** — בלי הזיכרון של הסוכן הראשי. זה בדיוק כמו שרצינו: הsubagent מקבל רק את מה שצריך לו למשימה הספציפית, לא את כל ה"אנציקלופדיה" של הסוכן הראשי.
+
+---
+
+## ניתוב ערוצים — Telegram, WhatsApp ועוד
+
+לכל סוכן יכולים להיות מספר ערוצי תקשורת. המשמעות הפרקטית: אתם יכולים "לדבר" עם הסוכן דרך Telegram, הוא יכול לשלוח דוחות ל-WhatsApp, ולשלוח email עם תוצאות.
+
+קונפיגורציה לסוכן עם מספר ערוצים:
+
+```json
+{
+  "channels": {
+    "telegram": {
+      "token": "BOT_TOKEN",
+      "chatId": "PERSONAL_CHAT",
+      "allowIncoming": true
+    },
+    "whatsapp": {
+      "apiKey": "WA_API_KEY",
+      "phone": "+972-xxx-xxxxxxx",
+      "incomingOnly": false
+    },
+    "email": {
+      "from": "agent@yourdomain.com",
+      "to": "you@yourdomain.com",
+      "provider": "agentmail"
+    }
+  }
+}
+```
+
+**routing logic** — לאיזה ערוץ שולחים מה:
+- התראות דחופות → Telegram (מגיע מיידית עם push)
+- דוחות יומיים מפורטים → Email (יש מקום להכל)
+- עדכונים שוטפים על מסחר → Telegram
+- הודעות מאנשים שיש להם רק WhatsApp → WhatsApp
+
+בסוכן Spark Trader, הגדרנו priority: כל alert שרמת הסיכון שלו מעל 7 (מתוך 10) הולך גם לטלגרם וגם לאימייל. כל השאר — טלגרם בלבד.
+
+---
+
+## Cron Jobs — האוטומציה שמחזיקה הכל
+
+זה אחד הדברים הכי עוצמתיים ב-OpenClaw. אתם מגדירים לוח זמנים, והסוכן מתחיל לעבוד לבד.
+
+הנה מדריך ה-cron syntax (זהה ל-Unix standard):
+
+```
+┌─────────── דקות (0-59)
+│  ┌──────── שעות (0-23)
+│  │  ┌───── ימי חודש (1-31)
+│  │  │  ┌── חודשים (1-12)
+│  │  │  │  ┌─ ימי שבוע (0=ראשון, 6=שבת)
+│  │  │  │  │
+*  *  *  *  *
+```
+
+דוגמאות:
+- `0 8 * * 1-5` — כל יום חול ב-8:00 בבוקר
+- `*/30 9-17 * * 1-5` — כל 30 דקות בין 9-17 בימי חול
+- `0 0 * * 0` — כל ראשון בחצות (דוח שבועי)
+- `*/5 * * * *` — כל 5 דקות (heartbeat)
+
+---
+
+## Spark Trader — הסוכן שמנהל מיליון דולר
+
+בואו נדבר על הסוכן הכי מורכב שלנו. Spark Trader הוא אובזרבטוריית מסחר אוטונומית שמנהלת פורטפוליו נייר של מיליון דולר.
+
+### 6 אסטרטגיות מקבילות:
+
+**1. Momentum Breakout** — מזהה פריצות טכניות בנפח גבוה. מחפש breakout מעל resistance עם Volume Ratio > 2. Lookback: 20 ימים.
+
+**2. Mean Reversion** — עובד עם RSI נמוך מ-30 על מניות שנמצאות ב-uptrend. מחכה לנר reversal לפני כניסה.
+
+**3. Sector Rotation** — עוקב אחרי תזרים כסף בין סקטורים. כשסקטור מקבל in-flow חזק, הוא קונה את המניות החזקות בו.
+
+**4. Options Flow** — עוקב אחרי unusual options activity. כשיש רכישות call גדולות שלא מוסברות, הוא מסמן לבדיקה.
+
+**5. Crypto-Equity Correlation** — מנצל קורלציות בין BTC/ETH לבין מניות tech. כשהביטקוין זז לפני הSP500, הסוכן מנסה להרוויח מהreaction.
+
+**6. News Sentiment** — מנתח headlines ו-earnings transcripts. מחפש discrepancy בין sentimment לבין ריאקציה של המחיר.
+
+### 7 Cron Jobs:
+
+```json
+"crons": [
+  {
+    "schedule": "0 8 * * 1-5",
+    "task": "Pre-market scan — בדוק גאפים גדולים, earnings היום, חדשות מהלילה. הכן watchlist."
+  },
+  {
+    "schedule": "30 9 * * 1-5",
+    "task": "פתיחת שוק — נתח את 15 הדקות הראשונות, זהה direction, עדכן כל אסטרטגיה."
+  },
+  {
+    "schedule": "*/30 10-15 * * 1-5",
+    "task": "עדכון שוטף — בדוק עמדות פתוחות, רמות stop-loss, הזדמנויות חדשות בכל אסטרטגיה."
+  },
+  {
+    "schedule": "0 16 * * 1-5",
+    "task": "סגירת שוק — סכם יום מסחר, חשב P&L, עדכן דוח בלוג ה-Brain."
+  },
+  {
+    "schedule": "0 20 * * 1-5",
+    "task": "ניתוח אחה\"צ — options flow, after-hours news, הכנה ליום המחרת."
+  },
+  {
+    "schedule": "0 10 * * 0",
+    "task": "דוח שבועי — ביצועים vs benchmark, ניתוח כל אסטרטגיה, המלצות."
+  },
+  {
+    "schedule": "0 6 1 * *",
+    "task": "דוח חודשי — P&L מפורט, attribution analysis, עדכון פרמטרים."
+  }
+]
+```
+
+המסחר הוא נייר — אבל הניתוח אמיתי. הסוכן משתמש ב-real-time data, מחשב כמו שצריך, ולומד. זה sandbox שמלמד אותנו האם הלוגיקה עובדת לפני שנשים כסף אמיתי.
+
+---
+
+## ה-Brain Page — ויזואליזציה של תהליך החשיבה
+
+אחד הדברים הכי מרשימים במערכת הוא ה-Brain Page. זה דף שמציג בזמן אמת (או כמעט) מה הסוכנים חושבים.
+
+### איך זה עובד:
+
+1. כל סשן של סוכן מסתיים בכתיבת "journal entry" — סיכום מה נעשה, מה הוחלט, מה ייעשה הבא
+2. ה-journal entries נשמרים ב-R2 (Cloudflare Object Storage)
+3. ה-Brain Page קורא את הentries ומציג אותם כ"מחשבות"
+4. יש timeline, יש פילוח לפי סוכן, יש sentiment analysis של ה"מחשבות"
+
+### מה אפשר לראות ב-Brain:
+
+- **Thinking Stream** — רצף של מחשבות בזמן אמת
+- **Decision Points** — כל פעם שסוכן קיבל החלטה משמעותית (למה כן, למה לא)
+- **Anomaly Flags** — כשמשהו יצא מן הרגיל והסוכן הסתכל עליו פעמיים
+- **Trade Rationale** — לכל עמדה שנפתחה, יש הסבר מפורט למה
+- **Strategy Performance Heatmap** — ויזואליזציה של איזו אסטרטגיה מביאה ביצועים
+
+ה-Brain Page הפך לאחת הדרכים הכי טובות שלנו לdebug סוכנים. כשהסוכן קיבל החלטה מוזרה, אני פותח את ה-Brain וקורא את תהליך החשיבה שלו. לרוב — ברגע שרואים את ה"מחשבה" בשלמותה — מבינים למה הוא הגיע לשם.
+
+---
+
+## טיפים וטעויות (Gotchas)
+
+אחרי חודשים של עבודה עם OpenClaw, הנה הדברים שהייתי רוצה שמישהו יאמר לי מראש:
+
+### 1. allowAgents — מיקום קריטי
+
+כבר ציינתי את זה, אבל שווה לחזור: `allowAgents: true` חייב להיות ברמה הראשונה של ה-JSON. אם תשמו אותו בתוך `settings` או `advanced`, הוא פשוט לא יעבוד בשקט. הסוכן לא יקרוס, הוא פשוט לא יוכל ליצור subagents וזה יוצר bugs שקשה לאתר.
+
+### 2. bootstrapMaxChars — אל תגזימו
+
+ניסינו לתת לסוכן bootstrap של 50,000 תווים. המטרה הייתה "ככל שיזכור יותר, יפעל יותר טוב". התוצאה הייתה הפוכה. הסוכן קרא הכל, ואז context window שלו היה כמעט מלא לפני שהתחיל לעבוד בכלל. הגענו ל-12,000-15,000 תווים כnorm. מה שלא נכנס — הולך למערכת נפרדת של semantic memory.
+
+### 3. Subagent Context — הזהרו מ"telephone game"
+
+כשסוכן ראשי מעביר הוראות לsubagent, הוא לפעמים מסכם ומפשט. אם ההפשטה לא מדויקת, ה-subagent עושה משהו שונה ממה שרצינו. הפתרון: **כתבו את הprompt לsubagent בצורה explicit ומדויקת**, לא "עשה מה שסיפרתי לך" אלא הכל מפורש.
+
+### 4. Rate Limits ו-Budget
+
+אחרי שבוע ראשון, קיבלנו חשבון שלא ציפינו לו. הבעיה: cron job שרץ כל 5 דקות, ובכל פעם יצר 3 subagents שכל אחד הריץ cron משלו. ריבוי שגיאתי. הגדרנו `budgetLimit` חודשי ו-alert כשמגיעים ל-80%. היום יש לנו גם circuit breaker — אם בשעה אחת הוצאנו יותר מ-X דולרים, הcrons עוצרים ומחכים לאישור ידני.
+
+### 5. Idempotency — כל cron חייב לסבול ריצה כפולה
+
+לפעמים cron רץ פעמיים (edge case, network timeout). הסוכן שלכם חייב להיות idempotent — לא לשכפל פעולות. לפני כל פעולה: "האם כבר עשיתי את זה היום?" בדקו לפי timestamp, flag בקובץ, state ב-R2.
+
+### 6. אל תסמכו על הזיכרון של הסוכן
+
+הזיכרון בין סשנים עובד, אבל הוא לא מושלם. החלטות קריטיות — כתבו אותן גם לקובץ, גם לlogger חיצוני, גם לemail. סוכן שה"זיכרון" שלו נפגם (קובץ פגום, context שנחתך) צריך להיות מסוגל לפעול מה-defaults בלי להתרסק.
+
+---
+
+## תצוגת הצינור — איך הכל מתחבר
+
+בואו נסכם את ה-flow המלא ב-happy path:
+
+```
+משתמש כותב לטלגרם → Spark מקבל הודעה
+    ↓
+Spark מנתח את הבקשה
+    ↓
+אם פשוט → מטפל לבד
+אם מורכב → יוצר subagent מתמחה
+    ↓
+Subagent מבצע משימה → מחזיר תוצאה
+    ↓
+Spark מסכם ושולח תשובה לטלגרם
+    ↓
+כותב journal entry לBrain
+    ↓
+Brain Page מתעדכן
+```
+
+בפרלל — הcrons רצים:
+```
+Cron timer מופעל
+    ↓
+Spark Trader מתעורר
+    ↓
+קורא bootstrap + זיכרון אחרון
+    ↓
+מבצע scan, ניתוח, החלטות
+    ↓
+מעדכן עמדות בפורטפוליו נייר
+    ↓
+שולח דוח לטלגרם + Brain
+    ↓
+נרדם עד ה-cron הבא
+```
+
+---
+
+## כשמתחילים — צעד אחר צעד
+
+אם אתם רוצים לבנות מערכת דומה, הנה הסדר המומלץ:
+
+**שלב 1: סוכן אחד, משימה אחת**
+אל תתחילו עם 5 סוכנים. תבנו סוכן אחד שעושה דבר אחד טוב. למשל: סוכן שכל בוקר שולח לכם דוח קצר על emails שלא ענתם עליהם. פשוט, בר-מדידה.
+
+**שלב 2: הוסיפו cron**
+כשהסוכן עובד ידנית, תתנו לו cron קטן. ראו שהוא מתנהג כמצופה כשרץ אוטומטית.
+
+**שלב 3: bootstrap file**
+תכתבו את ה"זיכרון הפרמננטי" — מי הסוכן, מה הכללים שלו, מה הוא אף פעם לא עושה.
+
+**שלב 4: ערוץ תקשורת**
+תוסיפו טלגרם בוט. פתאום הסוכן שלכם שולח לכם הודעות. זה הרגע שהכל נהיה real.
+
+**שלב 5: סוכן שני**
+רק אחרי שהראשון עובד אמין — תוסיפו שני. ותחליטו מה החלוקה ביניהם.
+
+**שלב 6: subagents**
+שלב מתקדם. כשיש לכם סוכנים שעובדים ואתם מבינים את ה-flow, תלמדו אותם לפצל משימות.
+
+---
+
+## לאן זה הולך?
+
+אנחנו בתחילת עידן שבו תוכנה כותבת תוכנה, וסוכנים בונים סוכנים. היום — OpenClaw עם 5 סוכנים שבניתי ידנית. מחר — Spark יבין מה צריך ויבנה את הסוכן הבא לבד.
+
+זה לא science fiction. זה לא AGI. זה engineering. ואם אתם רוצים להבין את העתיד — תתחילו לבנות סוכנים היום, ולא מחר.
+
+כי מי שמבין איך לעבוד עם מערכות אוטונומיות — יוכל לעשות פי 10 ממה שיכול לעשות כיום. ומי שלא — ובכן, הסוכנים של אחרים יעשו את העבודה.
+
+---
+
+*נדב פוקס הוא יזם טק ישראלי שבונה מערכות AI אוטונומיות. יש לו חמישה סוכנים שעובדים בשבילו בזמן שהוא ישן. לפעמים גם בזמן שהוא לא ישן.*
+
+*רוצים לשמוע עוד? עקבו לסדרת הפוסטים הבאה.*
+    </div>
+    <button class="copy-btn" onclick="copyBlock('blog-text', this)">העתק הכל</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     TAB 2: LINKEDIN POST
+═══════════════════════════════════════════════ -->
+<div id="tab-linkedin" class="tab-content">
+  <div class="section-header">
+    <h2>💼 פוסט LinkedIn</h2>
+    <span class="badge">2900 תווים</span>
+  </div>
+
+  <div class="copy-block">
+    <div class="copy-block-header">
+      <span class="copy-block-title">סוכנים בתוך סוכנים: איך בניתי מערכת AI שעובדת בשבילי 24/7</span>
+      <span class="copy-block-meta" id="li-chars">מחשב...</span>
+      <button class="copy-btn" onclick="copyBlock('linkedin-text', this)">העתק</button>
+    </div>
+    <div id="linkedin-text" class="copy-block-body" dir="rtl">
+לפני שנה הייתי מריץ סקריפט פייתון כדי לסחור במניות. היום — חמישה סוכני AI עובדים בשבילי, 24 שעות ביממה, 7 ימים בשבוע. בלי שאני נוגע בכלום.
+
+אני רוצה לשתף מה למדתי בדרך — כי הטעויות שעשיתי שווה שתכירו לפני שאתם מתחילים.
+
+🧠 הרעיון: סוכנים בתוך סוכנים
+
+במקום סוכן אחד שעושה הכל, בניתי מערכת מודולרית:
+• Spark — הסוכן הראשי, אורקסטרטור. מחליט מי עושה מה.
+• Spark Trader — מנהל 6 אסטרטגיות מסחר (מניות + קריפטו).
+• Spark Ops — שומר על הבריאות של כל המערכת.
+• Spark Creative — יוצר תוכן, כותב פוסטים (כמו זה).
+• Spark Dev — פיתוח, תיקוני באגים, שיפורים.
+
+כל סוכן עם "אישיות" משלו, זיכרון פרמננטי, וכלים ייחודיים. Spark יכול "להטיל" משימות על הסוכנים האחרים — subagent spawning.
+
+⚠️ 3 טעויות שכמעט הרסו הכל:
+
+1. תקציב בלי בלם — סוכן המסחר קנה מניות ב-$899K כשהתקציב היה $400K. למדתי: budget guard חובה בכל אסטרטגיה.
+
+2. Timeout קצר מדי — 30 שניות לא מספיק כשמודל AI חושב. 15 כשלונות רצופים. הכפלתי את כל ה-timeouts.
+
+3. קובץ bootstrap קטן מדי — הסוכנים "שכחו" הוראות קריטיות כי ה-context נחתך. 5,000 תווים → 20,000 תווים.
+
+🔧 מה שעובד:
+
+• זיכרון פרמננטי — כל סוכן זוכר מה עשה בסשנים קודמים
+• Cron jobs — אוטומציה מלאה. סריקת שוק כל 5 דקות, דוח סוף יום, גיבויים
+• ניטור עצמי — Ops סוכן מזהה תקלות ומתקן לפני שאני שם לב
+• הפרדת אחריות — כל סוכן מומחה בתחום שלו. לא mixים
+
+💡 הלקח הגדול:
+
+AI לא צריך להיות "חכם יותר". הוא צריך להיות מאורגן יותר. מערכת של 5 סוכנים "בינוניים" שעובדים יחד — טובה יותר מסוכן אחד "גאוני" שעושה הכל.
+
+אם אתם רוצים להתחיל — התחילו עם סוכן אחד. תנו לו משימה אחת. רק אחרי שהוא עובד אמין — תוסיפו שני. בנו בהדרגה.
+
+העתיד שייך למי שיודע לבנות מערכות אוטונומיות. לא כי AI יחליף אותנו — אלא כי מי שיודע לעבוד עם AI יעשה פי 10 ממי שלא.
+
+---
+נדב פוקס | יזם טק | בונה מערכות AI אוטונומיות
+
+#AI #Agents #Automation #AIAgents #OpenClaw #TradingAutomation #TechIsrael #AIArchitecture #SubAgents #AutonomousSystems
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     TAB 3: FACEBOOK SERIES
+═══════════════════════════════════════════════ -->
+<div id="tab-facebook" class="tab-content">
+  <div class="section-header">
+    <h2>📘 סדרת פוסטים לפייסבוק</h2>
+    <span class="badge">10 פוסטים</span>
+  </div>
+
+  <div class="fb-grid">
+
+    <!-- POST 1 -->
+    <div class="fb-card">
+      <div class="fb-card-header">
+        <span class="fb-post-num">1/10</span>
+        <span class="fb-post-topic">מהו סוכן AI?</span>
+      </div>
+      <div id="fb-post-1" class="fb-card-body" dir="rtl">
+כולם מדברים על AI. אבל מה זה בעצם "סוכן AI"?
+
+סוכן AI הוא לא chatbot. הוא לא עוזר שעונה על שאלות. סוכן AI הוא תוכנה שפועלת באופן אוטונומי — מקבלת משימה, מחליטה איך לבצע אותה, פועלת, ומדווחת.
+
+דמיינו עובד שעובד 24/7, אף פעם לא עייף, ותמיד זוכר את כל ההוראות שנתתם לו. עכשיו דמיינו שיש לכם חמישה כאלה. כל אחד מומחה בתחום אחר. זו המערכת שבניתי — וזו הסדרה שבה אני מסביר איך.
+
+בפוסטים הבאים אני אפרק את כל הארכיטקטורה, אראה קוד אמיתי, ואסביר את הטעויות שעשיתי (ויש כמה טובות). קדימה 🚀
+      </div>
+      <div class="fb-card-footer">
+        <span class="fb-char-count copy-block-meta"></span>
+        <button class="copy-btn" onclick="copyBlock('fb-post-1', this)">העתק</button>
+      </div>
+    </div>
+
+    <!-- POST 2 -->
+    <div class="fb-card">
+      <div class="fb-card-header">
+        <span class="fb-post-num">2/10</span>
+        <span class="fb-post-topic">למה סוכן אחד לא מספיק</span>
+      </div>
+      <div id="fb-post-2" class="fb-card-body" dir="rtl">
+בהתחלה בניתי סוכן אחד שעשה הכל. הוא ניהל מסחר, כתב תוכן, ניטר את המערכת, ותיקן באגים. זה עבד... בערך.
+
+הבעיה: כשסוכן עושה הכל, הוא מתבלבל. ה-context שלו מתמלא. הוא שוכח הוראות. הוא מערבב בין משימות. דמיינו שיש לכם עובד אחד שגם מתכנת, גם כותב בלוג, גם סוחר במניות, וגם מתקן שרתים. בו-זמנית.
+
+הפתרון: הפרדת אחריות. בדיוק כמו בחברה אמיתית. כל סוכן = תפקיד אחד. כל סוכן = מומחיות אחת. כל סוכן = זיכרון ייעודי.
+
+התוצאה: 5 סוכנים שכל אחד עושה את העבודה שלו מצוין, במקום סוכן אחד שעושה את הכל בינוני. זה ההבדל בין צוות מקצועי לבין freelancer שמנסה לעשות הכל.
+      </div>
+      <div class="fb-card-footer">
+        <span class="fb-char-count copy-block-meta"></span>
+        <button class="copy-btn" onclick="copyBlock('fb-post-2', this)">העתק</button>
+      </div>
+    </div>
+
+    <!-- POST 3 -->
+    <div class="fb-card">
+      <div class="fb-card-header">
+        <span class="fb-post-num">3/10</span>
+        <span class="fb-post-topic">הארכיטקטורה: סוכנים בתוך סוכנים</span>
+      </div>
+      <div id="fb-post-3" class="fb-card-body" dir="rtl">
+הנה המבנה של המערכת שלי:
+
+🧠 Spark — הסוכן הראשי. האורקסטרטור. הוא מקבל משימות ומחליט מי מטפל בכל אחת. הוא היחיד שיכול "להטיל" משימות על סוכנים אחרים (subagent spawning).
+
+📈 Spark Trader — מנהל 6 אסטרטגיות מסחר. סורק שוק כל 5 דקות. קונה ומוכר מניות וקריפטו לפי אלגוריתמים שהגדרתי.
+
+⚙️ Spark Ops — שומר על בריאות המערכת. גיבויים, ניטור, התראות. אם משהו נשבר — הוא הראשון לדעת.
+
+✍️ Spark Creative — תוכן ויצירתיות. בלוגים, פוסטים, תיעוד.
+
+🔧 Spark Dev — פיתוח ותחזוקה. קוד חדש, תיקוני באגים, שיפורים.
+
+הקסם: Spark הראשי יכול להגיד "Trader, תבדוק את השוק" ו-Trader מקבל session נפרד עם כל הכלים שלו. כל סוכן = קונטקסט נפרד = יעילות מקסימלית.
+      </div>
+      <div class="fb-card-footer">
+        <span class="fb-char-count copy-block-meta"></span>
+        <button class="copy-btn" onclick="copyBlock('fb-post-3', this)">העתק</button>
+      </div>
+    </div>
+
+    <!-- POST 4 -->
+    <div class="fb-card">
+      <div class="fb-card-header">
+        <span class="fb-post-num">4/10</span>
+        <span class="fb-post-topic">איך סוכנים מתקשרים?</span>
+      </div>
+      <div id="fb-post-4" class="fb-card-body" dir="rtl">
+אוקיי, יש לנו 5 סוכנים. איך הם "מדברים" אחד עם השני?
+
+שיטה 1: Subagent Spawning — הסוכן הראשי יוצר session חדש לסוכן אחר, נותן לו משימה, ומקבל תשובה. כמו מנהל שמפנה פנייה לעובד.
+
+שיטה 2: ACP (Agent Communication Protocol) — פרוטוקול שמאפשר תקשורת cross-session. סוכן יכול לשלוח הודעה לסוכן אחר גם בלי שמישהו ביקש. כמו Slack פנימי.
+
+שיטה 3: קבצים משותפים — כל סוכן יכול לקרוא ולכתוב ל-workspace. MEMORY.md הוא הזיכרון הפרמננטי. כשסוכן לומד משהו חשוב — הוא כותב את זה ל-MEMORY. סוכנים אחרים קוראים את זה.
+
+המפתח: שילוב של כל שלוש השיטות. משימות דחופות = spawning. תיאום = ACP. זיכרון = קבצים. כל שיטה פותרת בעיה אחרת.
+      </div>
+      <div class="fb-card-footer">
+        <span class="fb-char-count copy-block-meta"></span>
+        <button class="copy-btn" onclick="copyBlock('fb-post-4', this)">העתק</button>
+      </div>
+    </div>
+
+    <!-- POST 5 -->
+    <div class="fb-card">
+      <div class="fb-card-header">
+        <span class="fb-post-num">5/10</span>
+        <span class="fb-post-topic">זיכרון ומרחב עבודה</span>
+      </div>
+      <div id="fb-post-5" class="fb-card-body" dir="rtl">
+הבעיה הגדולה של AI: הוא שוכח. כל session חדש — הוא מתחיל מאפס. אז איך סוכן "זוכר" מה עשה אתמול?
+
+Workspace — לכל סוכן יש ספריית עבודה משלו. בתוכה:
+
+📋 BOOTSTRAP.md — הוראות שנטענות בכל session. "מי אתה, מה הכללים, מה אתה אף פעם לא עושה."
+
+🧠 MEMORY.md — זיכרון פרמננטי. הסוכן כותב לקובץ הזה כל דבר חשוב שלמד. בsession הבא — הוא קורא אותו וזוכר.
+
+🛠️ TOOLS.md — תיעוד הכלים הזמינים. הסוכן יודע מה הוא יכול לעשות.
+
+👥 AGENTS.md — רשימת סוכנים אחרים שהוא יכול לקרוא להם.
+
+הטעות שלי: הגדרתי bootstrapMaxChars ל-5000. הקובץ MEMORY.md של Spark גדל ל-8000 תווים. הוא פשוט "שכח" חצי מהמידע. הכפלתי ל-20,000 והכל חזר לעבוד.
+
+לקח: הזיכרון של AI הוא קובץ. תוודאו שהקובץ נטען בשלמותו.
+      </div>
+      <div class="fb-card-footer">
+        <span class="fb-char-count copy-block-meta"></span>
+        <button class="copy-btn" onclick="copyBlock('fb-post-5', this)">העתק</button>
+      </div>
+    </div>
+
+    <!-- POST 6 -->
+    <div class="fb-card">
+      <div class="fb-card-header">
+        <span class="fb-post-num">6/10</span>
+        <span class="fb-post-topic">דוגמא אמיתית: מערכת מסחר אוטונומית</span>
+      </div>
+      <div id="fb-post-6" class="fb-card-body" dir="rtl">
+בואו נדבר על מה שהמערכת שלי עושה בפועל. כל יום:
+
+⏰ 06:00 — דוח בוקר. Trader סוכן סורק 40 מניות, מחשב RSI, בודק Fear & Greed Index, ומחליט אם לקנות או למכור.
+
+📊 כל 5 דקות (שעות מסחר) — Scalper בודק הזדמנויות מסחר מהירות. קנייה ומכירה באותו יום.
+
+🌙 כל שעה (24/7) — Crypto Trader סוכן סורק BTC, ETH, SOL. קריפטו לא ישן.
+
+📉 16:30 — דוח סוף יום. סיכום P&L, מה נקנה, מה נמכר, מה הטעויות.
+
+💾 כל 30 דקות — גיבוי אוטומטי ל-R2 cloud storage.
+
+כל זה רץ לבד. אני מקבל התראות ב-Telegram רק אם משהו יוצא מהכלל. 99% מהזמן — אני לא מעורב.
+
+זה הכוח של סוכנים: הם עובדים כשאתם ישנים.
+      </div>
+      <div class="fb-card-footer">
+        <span class="fb-char-count copy-block-meta"></span>
+        <button class="copy-btn" onclick="copyBlock('fb-post-6', this)">העתק</button>
+      </div>
+    </div>
+
+    <!-- POST 7 -->
+    <div class="fb-card">
+      <div class="fb-card-header">
+        <span class="fb-post-num">7/10</span>
+        <span class="fb-post-topic">הגדרות קריטיות שלמדנו בדרך הקשה</span>
+      </div>
+      <div id="fb-post-7" class="fb-card-body" dir="rtl">
+3 הגדרות שכמעט הרסו הכל:
+
+🔴 allowAgents — ההגדרה שמאפשרת לסוכן להטיל משימות על סוכנים אחרים. שמתי אותה ב-defaults (הגדרות ברירת מחדל). זה לא עבד. בילוע שעות בdebug. מתברר: חייבים לשים את זה בכל סוכן בנפרד. באג מתועד. שעתיים הלכו על כלום.
+
+🔴 bootstrapMaxChars — כמה תווים נטענים מקובצי ה-workspace. ברירת מחדל: 5,000. הזיכרון של Spark גדל ל-8,000. הוא פשוט "שכח" חצי מההוראות שלו. שיניתי ל-20,000. פתאום הוא חזר להיות חכם.
+
+🔴 Timeout — הגדרתי 30 שניות ל-scalper. מודל AI צריך 10-20 שניות לחשוב. עוד 10 שניות לAPI. המשימה נכשלה 15 פעמים ברצף לפני שהבנתי. הכפלתי ל-90 שניות. אפס כשלונות מאז.
+
+הלקח: ההגדרות ה"משעממות" הן הקריטיות ביותר. לא ה-AI. לא האלגוריתם. ההגדרות.
+      </div>
+      <div class="fb-card-footer">
+        <span class="fb-char-count copy-block-meta"></span>
+        <button class="copy-btn" onclick="copyBlock('fb-post-7', this)">העתק</button>
+      </div>
+    </div>
+
+    <!-- POST 8 -->
+    <div class="fb-card">
+      <div class="fb-card-header">
+        <span class="fb-post-num">8/10</span>
+        <span class="fb-post-topic">אבטחה ובקרת תקציב</span>
+      </div>
+      <div id="fb-post-8" class="fb-card-body" dir="rtl">
+כשאתם נותנים לסוכן AI גישה לכסף אמיתי, אבטחה היא לא אופציה. זה לקח שלמדתי ב-$499,000.
+
+מה קרה: אינדיקטור Fear & Greed הראה "פחד קיצוני". הסוכן החליט לקנות. הרבה. $899,000 נגד תקציב של $400,000. כמעט כפול מהמותר.
+
+למה? לא היה budget guard. הסוכן ידע מה התקציב, אבל לא בדק אותו לפני כל פעולה. הוא פשוט קנה ככל שהאלגוריתם אמר לו.
+
+הפתרון — budget guard בכל אסטרטגיה:
+1. לפני כל רכישה — בדוק תקציב נותר
+2. אם התקציב <= 0 — עצור. אל תקנה כלום.
+3. כל רכישה — עדכן spent_so_far
+4. אם הרכישה הבאה חורגת — דלג
+
+בנוסף: ניטור. Ops סוכן מקבל התראה על כל חריגה. Telegram הודעה בזמן אמת.
+
+כלל ברזל: כל אוטומציה פיננסית חייבת guardrails. בלי יוצא מן הכלל.
+      </div>
+      <div class="fb-card-footer">
+        <span class="fb-char-count copy-block-meta"></span>
+        <button class="copy-btn" onclick="copyBlock('fb-post-8', this)">העתק</button>
+      </div>
+    </div>
+
+    <!-- POST 9 -->
+    <div class="fb-card">
+      <div class="fb-card-header">
+        <span class="fb-post-num">9/10</span>
+        <span class="fb-post-topic">העתיד: לאן סוכנים הולכים?</span>
+      </div>
+      <div id="fb-post-9" class="fb-card-body" dir="rtl">
+מה שבניתי היום זו רק ההתחלה. הנה לאן זה הולך:
+
+🔮 סוכנים שבונים סוכנים — היום אני מגדיר כל סוכן ידנית. בעוד שנה? Spark הראשי יבין שצריך סוכן חדש ויבנה אותו לבד. כולל personality, workspace, ו-bootstrap.
+
+🔮 למידה מצטברת — היום MEMORY.md הוא טקסט שהסוכן כותב. בעתיד: vector embeddings, RAG, וחיפוש סמנטי. הסוכן לא רק "זוכר" — הוא "מבין" מה רלוונטי.
+
+🔮 שיתוף פעולה real-time — היום סוכנים עובדים ברצף. Spark מטיל → Trader מבצע → Spark ממשיך. בעתיד: סוכנים עובדים במקביל, משתפים מידע בזמן אמת, מתאמים בלי אורקסטרטור.
+
+🔮 קהילת סוכנים — היום כל אחד בונה לבד. בעתיד: marketplace של סוכנים. צריך סוכן מסחר? מוריד אחד מוכן. צריך סוכן תוכן? יש אחד עם 4.8 כוכבים.
+
+אנחנו בדיוק באותו שלב שבו היה האינטרנט ב-1995. מי שבונה עכשיו — יהיה במקום אחר לגמרי בעוד 3 שנים.
+      </div>
+      <div class="fb-card-footer">
+        <span class="fb-char-count copy-block-meta"></span>
+        <button class="copy-btn" onclick="copyBlock('fb-post-9', this)">העתק</button>
+      </div>
+    </div>
+
+    <!-- POST 10 -->
+    <div class="fb-card">
+      <div class="fb-card-header">
+        <span class="fb-post-num">10/10</span>
+        <span class="fb-post-topic">איך להתחיל? מדריך צעד אחר צעד</span>
+      </div>
+      <div id="fb-post-10" class="fb-card-body" dir="rtl">
+רוצים להתחיל לבנות מערכת סוכנים? הנה התוכנית שלי בשבילכם:
+
+צעד 1: בחרו פלטפורמה. OpenClaw, LangChain, CrewAI, AutoGen — לא משנה מה. תבחרו אחת ותתחילו.
+
+צעד 2: בנו סוכן אחד. כן, אחד. עם משימה אחת פשוטה. "כל בוקר, תגיד לי מה מזג האוויר." הנקודה: להבין את ה-flow.
+
+צעד 3: תוסיפו זיכרון. BOOTSTRAP.md + MEMORY.md. תנו לסוכן "לזכור" מה הוא עשה אתמול.
+
+צעד 4: אוטומציה. Cron job שמריץ את הסוכן אוטומטית. עכשיו הוא עובד בלעדיכם.
+
+צעד 5: סוכן שני. רק אחרי שהראשון עובד אמין. תחליטו על הפרדת אחריות.
+
+צעד 6: תקשורת בין סוכנים. Subagent spawning. הסוכן הראשי "מטיל" משימות.
+
+צעד 7: ניטור והתראות. Telegram/Slack. דעו מה קורה בלי לפתוח מסך.
+
+הכלל: בנו בהדרגה. אל תנסו לבנות 5 סוכנים ביום אחד. כל שבוע — תוסיפו יכולת אחת.
+
+בהצלחה! ואם יש שאלות — שלחו הודעה. ברצינות 🤝
+
+---
+נדב פוקס | יזם טק | סדרת "סוכנים בתוך סוכנים"
+      </div>
+      <div class="fb-card-footer">
+        <span class="fb-char-count copy-block-meta"></span>
+        <button class="copy-btn" onclick="copyBlock('fb-post-10', this)">העתק</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</main>
+
+<script>
+// ── TAB SWITCHING ────────────────────────────────────────────
+function showTab(name, clickedBtn) {
+  document.querySelectorAll('.tab-content').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+  var target = document.getElementById('tab-' + name);
+  if (target) target.classList.add('active');
+  if (clickedBtn) clickedBtn.classList.add('active');
+  // update char counters when switching
+  if (name === 'linkedin') updateLinkedInMeta();
+}
+
+// ── COPY HELPER ──────────────────────────────────────────────
+function copyBlock(elementId, btn) {
+  var el = document.getElementById(elementId);
+  if (!el) return;
+  var text = el.innerText;
+  var prev = btn.textContent;
+  function onSuccess() {
+    btn.textContent = '✓ הועתק!';
+    btn.classList.add('copied');
+    setTimeout(function() {
+      btn.textContent = prev;
+      btn.classList.remove('copied');
+    }, 2000);
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(onSuccess).catch(function(){
+      fallbackCopy(text, onSuccess);
+    });
+  } else {
+    fallbackCopy(text, onSuccess);
+  }
+}
+
+function fallbackCopy(text, cb) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.cssText = 'position:fixed;top:-9999px;opacity:0';
+  document.body.appendChild(ta);
+  ta.focus(); ta.select();
+  try { document.execCommand('copy'); if(cb) cb(); } catch(e){}
+  document.body.removeChild(ta);
+}
+
+// ── CHAR COUNTERS ────────────────────────────────────────────
+function updateBlogMeta() {
+  var el = document.getElementById('blog-text');
+  var meta = document.getElementById('blog-chars');
+  if (!el || !meta) return;
+  var chars = el.innerText.length;
+  var words = el.innerText.trim().split(/\s+/).length;
+  meta.textContent = chars.toLocaleString('he') + ' תווים · ' + words.toLocaleString('he') + ' מילים';
+}
+
+function updateLinkedInMeta() {
+  var el = document.getElementById('linkedin-text');
+  var meta = document.getElementById('li-chars');
+  if (!el || !meta) return;
+  var chars = el.innerText.length;
+  var limit = 2900;
+  meta.textContent = chars.toLocaleString('he') + ' / ' + limit + ' תווים';
+  if (chars > limit) {
+    meta.style.color = '#e07a5f';
+    meta.title = 'חורג ממגבלת LinkedIn';
+  } else {
+    meta.style.color = '';
+    meta.title = '';
+  }
+}
+
+function updateFBCharCounts() {
+  document.querySelectorAll('.fb-card').forEach(function(card) {
+    var body = card.querySelector('.fb-card-body');
+    var counter = card.querySelector('.fb-char-count');
+    if (body && counter) {
+      counter.textContent = body.innerText.length.toLocaleString('he') + ' תווים';
+    }
+  });
+}
+
+// ── INIT ─────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', function() {
+  updateBlogMeta();
+  updateLinkedInMeta();
+  updateFBCharCounts();
+});
+</script>
+
+</body>
+</html>
