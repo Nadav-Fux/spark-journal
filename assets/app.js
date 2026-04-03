@@ -97,6 +97,7 @@ function init() {
     })
     .then(function(data) {
       entries = data.entries || (Array.isArray(data) ? data : []);
+      window.__allEntries = entries;
       categories = data.categories || {};
       // Detect section from hash
       if (location.hash.startsWith('#section/')) {
@@ -536,3 +537,111 @@ function wireEvents() {
     });
   }
 }
+
+/* ── Search Overlay ── */
+(function() {
+  var $overlay    = document.getElementById('search-overlay');
+  var $backdrop   = document.getElementById('search-overlay-backdrop');
+  var $input      = document.getElementById('overlay-search');
+  var $results    = document.getElementById('overlay-results');
+  var $searchBtn  = document.getElementById('search-btn');
+  var focusIdx    = -1;
+
+  function openOverlay() {
+    $overlay.hidden = false;
+    document.body.classList.add('search-open');
+    $input.value = '';
+    $results.innerHTML = renderHint();
+    focusIdx = -1;
+    setTimeout(function() { $input.focus(); }, 50);
+  }
+
+  function closeOverlay() {
+    $overlay.hidden = true;
+    document.body.classList.remove('search-open');
+    focusIdx = -1;
+  }
+
+  function renderHint() {
+    return '<div class="overlay-hint"><span><kbd>↑</kbd><kbd>↓</kbd> ניווט</span><span><kbd>Enter</kbd> פתח</span><span><kbd>ESC</kbd> סגור</span></div>';
+  }
+
+  function searchEntries(q) {
+    if (!q) { $results.innerHTML = renderHint(); focusIdx = -1; return; }
+    var ql = q.toLowerCase();
+    var hits = [];
+    (window.__allEntries || []).forEach(function(e) {
+      var title   = (loc(e,'title')   || '').toLowerCase();
+      var summary = (loc(e,'summary') || '').toLowerCase();
+      var details = (loc(e,'details') || '').replace(/<[^>]+>/g,' ').toLowerCase();
+      var tags    = (e.tags || []).join(' ').toLowerCase();
+      if (title.includes(ql) || summary.includes(ql) || details.includes(ql) || tags.includes(ql)) {
+        hits.push(e);
+      }
+    });
+
+    if (!hits.length) {
+      $results.innerHTML = '<div class="overlay-empty">לא נמצאו תוצאות עבור &ldquo;' + esc(q) + '&rdquo;</div>' + renderHint();
+      focusIdx = -1;
+      return;
+    }
+
+    var html = hits.slice(0,20).map(function(e, i) {
+      var date = e.date ? e.date.slice(0,10) : '';
+      return '<div class="overlay-result-item" data-id="' + esc(e.id) + '" tabindex="-1">' +
+        '<div class="overlay-result-title">' + esc(loc(e,'title') || e.id) + '</div>' +
+        '<div class="overlay-result-summary">' + esc((loc(e,'summary') || '').slice(0,120)) + '</div>' +
+        '<div class="overlay-result-meta"><span class="overlay-result-cat">' + esc(e.category||'') + '</span><span>' + date + '</span></div>' +
+        '</div>';
+    }).join('');
+    if (hits.length > 20) html += '<div class="overlay-empty" style="padding:8px 12px;font-size:11px">+ ' + (hits.length - 20) + ' תוצאות נוספות — צמצם את החיפוש</div>';
+    html += renderHint();
+    $results.innerHTML = html;
+    focusIdx = -1;
+
+    $results.querySelectorAll('.overlay-result-item').forEach(function(el) {
+      el.addEventListener('click', function() {
+        var id = el.dataset.id;
+        closeOverlay();
+        var entry = (window.__allEntries || []).find(function(e) { return e.id === id; });
+        if (entry) setTimeout(function() { openDrawer(entry); }, 80);
+      });
+    });
+  }
+
+  function moveFocus(dir) {
+    var items = Array.prototype.slice.call($results.querySelectorAll('.overlay-result-item'));
+    if (!items.length) return;
+    items.forEach(function(el) { el.classList.remove('focused'); });
+    focusIdx = Math.max(0, Math.min(items.length - 1, focusIdx + dir));
+    items[focusIdx].classList.add('focused');
+    items[focusIdx].scrollIntoView({ block: 'nearest' });
+  }
+
+  if ($searchBtn) $searchBtn.addEventListener('click', openOverlay);
+  if ($backdrop)  $backdrop.addEventListener('click', closeOverlay);
+
+  document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); openOverlay(); return; }
+    if (e.key === '/' && !e.target.matches('input,textarea,[contenteditable]') && $overlay.hidden) { e.preventDefault(); openOverlay(); return; }
+    if (!$overlay.hidden) {
+      if (e.key === 'Escape') { closeOverlay(); return; }
+      if (e.key === 'ArrowDown')  { e.preventDefault(); moveFocus(1); return; }
+      if (e.key === 'ArrowUp')    { e.preventDefault(); moveFocus(-1); return; }
+      if (e.key === 'Enter') {
+        var focused = $results.querySelector('.overlay-result-item.focused');
+        if (focused) focused.click();
+        return;
+      }
+    }
+  });
+
+  $input.addEventListener('input', function() { searchEntries($input.value.trim()); });
+  document.getElementById('overlay-esc-hint').addEventListener('click', closeOverlay);
+
+  // Expose entries for search after load
+  var _origInit = window.__onEntriesLoaded;
+  document.addEventListener('entriesLoaded', function(e) {
+    window.__allEntries = e.detail || [];
+  });
+})();

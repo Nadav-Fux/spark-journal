@@ -43,6 +43,10 @@
       </a>
       <div class="header-actions">
         <span id="count" class="count" title="Total entries">0</span>
+        <button id="search-btn" class="search-btn" type="button" aria-label="Search" title="Search (Ctrl+K)">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <kbd class="search-kbd">⌘K</kbd>
+        </button>
         <button id="refresh-btn" class="refresh-btn" type="button" aria-label="Refresh" title="Refresh">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
         </button>
@@ -98,6 +102,19 @@
       <button id="drawer-scroll-top" class="drawer-scroll-top" type="button" aria-label="Scroll to top">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 12V4M4 7l4-4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
+    </div>
+  </div>
+
+  <!-- Search overlay -->
+  <div id="search-overlay" class="search-overlay" hidden role="dialog" aria-modal="true" aria-label="Search">
+    <div class="search-overlay-backdrop" id="search-overlay-backdrop"></div>
+    <div class="search-overlay-box">
+      <div class="search-overlay-input-wrap">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="search" id="overlay-search" class="overlay-search-input" placeholder="חיפוש בכל הרשומות..." autocomplete="off" spellcheck="false">
+        <kbd class="overlay-esc" id="overlay-esc-hint">ESC</kbd>
+      </div>
+      <div id="overlay-results" class="overlay-results"></div>
     </div>
   </div>
 
