@@ -603,8 +603,7 @@ function wireEvents() {
       el.addEventListener('click', function() {
         var id = el.dataset.id;
         closeOverlay();
-        var entry = (window.__allEntries || []).find(function(e) { return e.id === id; });
-        if (entry) setTimeout(function() { openDrawer(entry); }, 80);
+        setTimeout(function() { openEntry(id); }, 80);
       });
     });
   }
