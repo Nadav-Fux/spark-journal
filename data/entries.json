@@ -52,6 +52,27 @@
   },
   "entries": [
     {
+      "id": "2026-04-14-spark-server-security-audit",
+      "date": "2026-04-14T04:00:00+03:00",
+      "category": "security",
+      "severity": "critical",
+      "tags": [
+        "security",
+        "audit",
+        "docker",
+        "postgresql",
+        "brute-force",
+        "backup",
+        "monitoring"
+      ],
+      "title_en": "Spark Server Security Audit: PostgreSQL Brute Force Blocked, Ports Locked Down",
+      "title_he": "ביקורת אבטחת שרת ספארק: מתקפת Brute Force נחסמה, פורטים ננעלו",
+      "summary_en": "Full server health audit revealed PostgreSQL exposed to internet with 282K brute-force attempts. None succeeded. Ports locked to localhost. R2 backups broken. Telegram alerts down. Complete remediation plan created.",
+      "summary_he": "ביקורת בריאות מלאה חשפה PostgreSQL חשוף לאינטרנט עם 282K ניסיונות פריצה. אף אחד לא הצליח. פורטים ננעלו. גיבויי R2 שבורים. התראות Telegram לא עובדות.",
+      "details_en": "<h2>Executive Summary</h2><p>Comprehensive health audit of Spark server performed on April 14, 2026. Server uptime: 59 days, 7 Docker containers. Previous March 2026 audit critical fixes verified. New critical issues emerged.</p><h2>Critical: PostgreSQL Exposed to Internet</h2><p><strong>282,930 failed auth attempts</strong> from <strong>1,370+ unique usernames</strong>. Botnet patterns, dictionary attacks, app probes detected. <strong>None succeeded</strong> - scram-sha-256 held. Only 1 user, no suspicious DBs/tables.</p><p><strong>Root cause:</strong> Docker bypasses UFW entirely - all container ports were internet-accessible.</p><p><strong>Fix:</strong> PG port changed to 127.0.0.1:5432, n8n to 127.0.0.1:5678. Verified healthy.</p><h2>R2 Backups: Broken Since ~April 5</h2><p>wrangler missing from container. Every 30-min backup fails. Only GitHub backup works. Plan: install wrangler on host.</p><h2>Telegram Alerts: Non-Functional</h2><p>3,878 send failures/24h, 323 dropped alerts, 10 stuck. Monitoring is blind.</p><h2>OpenClaw: 4/9 Processes FATAL</h2><p>Working: openclaw, novnc, xvfb, x11vnc, fluxbox. FATAL: smart-router, whatsapp-daemon, antigravity-proxy, socat.</p><h2>Working Services</h2><ul><li>OpenClaw core, n8n (5 workflows), PostgreSQL, CF Tunnel</li><li>Tripping Engine, Dashboard, GitHub Backup (2h), Health Monitor (5min)</li></ul><h2>March Audit Follow-Up</h2><p>CRIT-01/02/03/07: All FIXED. CRIT-04 PG backup: needs verification.</p><h2>Bonus: Docker Compose v2 Installed</h2><p>v1 broken. v2 (2.36.2) installed.</p><h2>Upgrades</h2><ul><li>Ubuntu 22.04: ok until 2027</li><li>Docker 28->29: moderate risk</li><li>PG 15->16: defer May/June</li><li>24 packages: safe</li></ul><h2>Plan</h2><ol><li>DONE: Lock ports</li><li>DONE: Compose v2</li><li>Next: Telegram, R2, Smart Router, WhatsApp, PG backup, system updates</li></ol>",
+      "details_he": "<h2>סיכום</h2><p>ביקורת בריאות מקיפה של שרת ספארק ב-14 באפריל 2026. 59 ימי uptime, 7 קונטיינרים. תיקוני ביקורת מרץ אומתו. בעיות קריטיות חדשות נמצאו.</p><h2>קריטי: PostgreSQL חשוף</h2><p><strong>282,930 ניסיונות אימות כושלים</strong> מ-<strong>1,370+ משתמשים</strong>. בוטנטים, מתקפות מילון. <strong>אף אחד לא הצליח</strong> - scram-sha-256 עמד.</p><p><strong>סיבה:</strong> Docker עוקף UFW.</p><p><strong>תיקון:</strong> PG ל-127.0.0.1:5432, n8n ל-127.0.0.1:5678.</p><h2>גיבויי R2: שבורים מאז ~5 באפריל</h2><p>wrangler חסר. רק GitHub backup עובד.</p><h2>Telegram: לא עובד</h2><p>3,878 כשלונות/24 שעות. המערכת עיוורת.</p><h2>OpenClaw: 4/9 FATAL</h2><p>פועל: openclaw, novnc. FATAL: smart-router, whatsapp, antigravity, socat.</p><h2>עובד</h2><ul><li>OpenClaw, n8n, PostgreSQL, CF Tunnel, Tripping, Dashboard, GitHub Backup</li></ul><h2>ביקורת מרץ</h2><p>CRIT-01/02/03/07: תוקנו. CRIT-04: צריך אימות.</p><h2>Docker Compose v2</h2><p>v1 שבור, v2 הותקן.</p><h2>שדרוגים</h2><ul><li>Ubuntu: בסדר עד 2027</li><li>Docker, PG: דחייה</li><li>24 חבילות: בטוח</li></ul><h2>תוכנית</h2><ol><li>בוצע: נעילת פורטים, Compose v2</li><li>הבא: Telegram, R2, Smart Router, WhatsApp</li></ol>"
+    },
+    {
       "id": "2026-04-01-mega-session-total-recall-statusline-research",
       "date": "2026-04-01T23:59:00+03:00",
       "category": "research",
